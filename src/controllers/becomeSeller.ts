@@ -1,53 +1,55 @@
+// Salon registration in mobile app
+
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcrypt';
 import nodemailer from 'nodemailer';
 
 const prisma = new PrismaClient();
 
-export async function signUp(req: Request, res: Response) {
-    const { name, email, line1, line2, city, contactNo, password } = req.body;
+export async function becomeSeller(req: Request, res: Response){
+    const {email} = req.body;
 
-    try {
+    try{
 
-        if(!name || !email || !line1 || !line2 || !city || !contactNo || !password ){
-           return res.status(400).json({ error: 'Invalid input format'});
+        if (!email){
+            return res.status(400).json({ status: 400, error:'Invlid input format'});
         }
 
-        const existingUser = await prisma.users.findUnique({
-            where: { contactNo }
+        const existingSeller = await prisma.sellers.findUnique({
+            where: {email}
         });
 
-        if(existingUser){
-            return res.status(400).json({ error: 'User already exist'});
+        if(existingSeller){
+            return res.status(401).json({ status: 400, error: 'Seller with this contact already exisits'});
         }
-
-        const hashedPassword = await bcrypt.hash(password, 10); 
 
         const OTP = generateOTP();
         await sendOTP(email, OTP);
 
-        await prisma.users.create({
-            data: {
-                name,
+        await prisma.sellers.create({
+            data : {
+                
                 email,
-                line1,
-                line2,
-                city,
-                contactNo,
-                password: hashedPassword
-
+                OTP
             },
         });
 
-        return res.status(201).json({  message: 'Registration successful'});
         
-    } catch (error) {
-        // If there's an error during user creation, send an error response
-        console.error("Error creating user:", error);
-        res.status(500).json({ error: "An error occurred while creating user" });
+
+        return res.status(201).json({ status: 201, message: 'OTP sent successfully'});
+    }
+    catch (error: unknown) {
+        if (error instanceof Error) {
+          res.status(400).json({ error: error.message });
+        } else {
+          res.status(500).json({ error: 'Internal Server Error' });
+        }
+      }
+    finally{
+        await prisma.$disconnect();
     }
 }
+
 function generateOTP() {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     return otp;
@@ -82,4 +84,3 @@ async function sendOTP(email: string, otp: string){
 
     console.log('Message sent: %s', info.messageId);
 } 
-

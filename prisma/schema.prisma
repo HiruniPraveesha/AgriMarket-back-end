@@ -20,3 +20,38 @@ model users {
   contactNo String @unique
   password  String
 }
+
+model passwordResetTokens {
+  id        Int      @id @unique @default(autoincrement())
+  email     String
+  token     String
+  expiresAt DateTime
+}
+
+model sellers {
+  seller_id     Int        @unique @default(autoincrement())
+  store_name    String?
+  email         String     @unique
+  line1         String?
+  line2         String?
+  city          String?
+  district      String?
+  contactNo     String?    @unique
+  password      String?
+  OTP           String?
+  emailVerified Boolean?
+  products      products[]
+}
+
+model verification_codes {
+  id    Int    @id @default(autoincrement())
+  email String
+  code  String
+}
+
+model products {
+  product_id Int      @unique @default(autoincrement())
+  seller     sellers? @relation(fields: [sellerId], references: [seller_id])
+  sellerId   Int?
+  district   String   @map(name: "district")
+}
