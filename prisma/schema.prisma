@@ -19,6 +19,7 @@ model users {
   city      String
   contactNo String @unique
   password  String
+  wallet wallet[]
 }
 
 model passwordResetTokens {
@@ -54,4 +55,12 @@ model products {
   seller     sellers? @relation(fields: [sellerId], references: [seller_id])
   sellerId   Int?
   district   String   @map(name: "district")
+}
+
+model wallet {
+  wallet_id Int @id @unique @default(autoincrement())
+  user users @relation(fields: [buyerId], references: [id])
+  buyerId Int
+  walletBal Float 
+  ReachargeAmt Float 
 }
