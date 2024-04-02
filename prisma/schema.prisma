@@ -40,7 +40,7 @@ model sellers {
   password      String?
   OTP           String?
   emailVerified Boolean?
-  products      products[]
+  products      Product[]
 }
 
 model verification_codes {
@@ -49,9 +49,26 @@ model verification_codes {
   code  String
 }
 
-model products {
-  product_id Int      @unique @default(autoincrement())
-  seller     sellers? @relation(fields: [sellerId], references: [seller_id])
-  sellerId   Int?
-  district   String   @map(name: "district")
+
+// schema.prisma
+
+// Define the Product model
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  price       Float
+  image       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  categoryId  Int
+  category    Category @relation(fields: [categoryId], references: [id], map: "product_category")
+  sellerId    Int
+  seller    sellers @relation(fields: [sellerId], references: [seller_id], map: "product_seller")
+}
+
+// Define the Category model
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  products    Product[]
 }
