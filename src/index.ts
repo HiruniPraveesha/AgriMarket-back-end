@@ -7,6 +7,7 @@ import { forgotPassword } from './controllers/forgotPassword';
 import { completeSellerRegistration } from './controllers/completeSellerRegistration';
 import { getAllCategories,createCategory, updateCategoryById, deleteCategoryById } from './controllers/category';
 import { Request, Response } from 'express';
+import { getAllProducts } from './controllers/product';
 
 
 const app = express();
@@ -24,6 +25,7 @@ app.post('/completeSellerRegistration', completeSellerRegistration);
 
 // Routes for category management
 app.get('/categories', getAllCategories);
+app.get('/products', getAllProducts);
 
 app.post('/categories', async (req, res) => {
   const { name } = req.body;

@@ -30,7 +30,10 @@ export const getAllCategoryNames = async () => {
 export const getAllCategories = async (req: Request, res: Response) => {
   try {
     const categoryNames = await getAllCategoryNames();
-    res.json(categoryNames);
+    console.log(categoryNames)
+    res.status(200).json({
+      "data":categoryNames
+    });
   } catch (error) {
     console.error('Error fetching category names:', error);
     res.status(500).json({ error: 'Internal Server Error' });
