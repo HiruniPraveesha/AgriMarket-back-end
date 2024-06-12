@@ -29,7 +29,7 @@ export async function completeSellerRegistration(req: Request, res: Response) {
                 district,
                 contactNo,
                 password,
-                emailVerified: true // Assuming registration completes email verification
+                emailVerified: true 
             }
         });
 

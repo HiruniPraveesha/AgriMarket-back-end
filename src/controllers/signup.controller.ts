@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import nodemailer from 'nodemailer';
+import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
 
@@ -10,11 +11,11 @@ export async function signUp(req: Request, res: Response) {
 
     try {
 
-        if(!name || !email || !line1 || !line2 || !city || !contactNo || !password ){
-           return res.status(400).json({ error: 'Invalid input format'});
+        if(!name || !email || !contactNo ){
+           return res.status(400).json({ error: 'Please fill all the details'});
         }
 
-        const existingUser = await prisma.users.findUnique({
+        const existingUser = await prisma.buyers.findUnique({
             where: { contactNo }
         });
 
@@ -27,7 +28,7 @@ export async function signUp(req: Request, res: Response) {
         const OTP = generateOTP();
         await sendOTP(email, OTP);
 
-        await prisma.users.create({
+        await prisma.buyers.create({
             data: {
                 name,
                 email,
@@ -43,7 +44,7 @@ export async function signUp(req: Request, res: Response) {
         return res.status(201).json({  message: 'Registration successful'});
         
     } catch (error) {
-        // If there's an error during user creation, send an error response
+        
         console.error("Error creating user:", error);
         res.status(500).json({ error: "An error occurred while creating user" });
     }
@@ -82,4 +83,31 @@ async function sendOTP(email: string, otp: string){
 
     console.log('Message sent: %s', info.messageId);
 } 
+
+export async function verifyOTP(req: Request, res: Response) {
+    const { email, otp } = req.body;
+
+    try {
+        
+        const user = await prisma.buyers.findUnique({
+            where: { email }
+        });
+
+        
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        
+        if (generateOTP !== otp) {
+            return res.status(400).json({ error: 'Invalid OTP' });
+        }
+
+        
+        return res.status(200).json({ message: 'OTP verified successfully' });
+    } catch (error) {
+        console.error("Error verifying OTP:", error);
+        res.status(500).json({ error: "An error occurred while verifying OTP" });
+    }
+}
 

@@ -4,6 +4,7 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import nodemailer from 'nodemailer';
 
+
 const prisma = new PrismaClient();
 
 export async function becomeSeller(req: Request, res: Response){
