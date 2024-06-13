@@ -4,20 +4,27 @@ import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
-export async function GetUserName(req: Request, res: Response) {
+export async function GetUserDetails(req: Request, res: Response) {
     const { id } = req.query;
 
-    if (!id || typeof id !== 'string') {
+    if (!id ) {
         return res.status(400).json({ error: 'Invalid or missing user ID' });
     }
 
     try {
-        const user = await prisma.users.findUnique({
+        const user = await prisma.buyers.findUnique({
             where: {
-                id: parseInt(id),
+                buyer_id: Number(id),
             },
             select: {
                 name: true,
+                contactNo: true, 
+                email:true,
+                password:true,
+                city:true,
+                line1:true,
+                line2:true
+                
             },
         });
 
@@ -25,7 +32,7 @@ export async function GetUserName(req: Request, res: Response) {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        return res.status(200).json({ name: user.name });
+        return res.status(200).json({ data: user });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: 'Internal server error' });
@@ -40,9 +47,9 @@ export async function ChangeUserName(req: Request, res: Response) {
     }
 
     try {
-        const updatedUser = await prisma.users.update({
+        const updatedUser = await prisma.buyers.update({
             where: {
-                id: parseInt(id),
+                buyer_id: parseInt(id),
             },
             data: {
                 name: newName,
@@ -56,35 +63,6 @@ export async function ChangeUserName(req: Request, res: Response) {
     }
 }
 
-export async function GetContactNumber(req: Request, res: Response) {
-    const { id } = req.query;
-
-    if (!id || typeof id !== 'string') {
-        return res.status(400).json({ error: 'Invalid or missing user ID' });
-    }
-
-    try {
-        const user = await prisma.users.findUnique({
-            where: {
-                id: parseInt(id),
-            },
-            select: {
-                contactNo: true, 
-            },
-        });
-
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        return res.status(200).json({ contactNumber: user.contactNo });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Internal server error' });
-    }
-}
-
-
 export async function ChangeContactNumber(req: Request, res: Response) {
     const { id, newContactNumber } = req.body;
 
@@ -93,16 +71,16 @@ export async function ChangeContactNumber(req: Request, res: Response) {
     }
 
     try {
-        const updatedUser = await prisma.users.update({
+        const updatedUser = await prisma.buyers.update({
             where: {
-                id: parseInt(id),
+                buyer_id: parseInt(id),
             },
             data: {
                 contactNo: newContactNumber,
             },
         });
 
-        return res.status(200).json({ message: 'User contact number updated successfully', user: updatedUser });
+        return res.status(200).json({ message: 'User contact number updated successfully', ContactNumber: updatedUser.contactNo });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: 'Internal server error' });
@@ -121,9 +99,9 @@ export async function ChangePassword(req: Request, res: Response) {
     }
 
     try {
-        const user = await prisma.users.findUnique({
+        const user = await prisma.buyers.findUnique({
             where: {
-                id: parseInt(id),
+                buyer_id: parseInt(id),
             },
         });
 
@@ -139,9 +117,9 @@ export async function ChangePassword(req: Request, res: Response) {
 
         const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
-        const updatedUser = await prisma.users.update({
+        const updatedUser = await prisma.buyers.update({
             where: {
-                id: parseInt(id),
+                buyer_id: parseInt(id),
             },
             data: {
                 password: hashedNewPassword,
@@ -149,34 +127,6 @@ export async function ChangePassword(req: Request, res: Response) {
         });
 
         return res.status(200).json({ message: 'User password updated successfully', user: updatedUser });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Internal server error' });
-    }
-}
-
-export async function GetCity(req: Request, res: Response) {
-    const { id } = req.query;
-
-    if (!id || typeof id !== 'string') {
-        return res.status(400).json({ error: 'Invalid or missing user ID' });
-    }
-
-    try {
-        const user = await prisma.users.findUnique({
-            where: {
-                id: parseInt(id),
-            },
-            select: {
-                city: true, 
-            },
-        });
-
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        return res.status(200).json({ city: user.city });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: 'Internal server error' });
@@ -191,9 +141,9 @@ export async function ChangeCity(req: Request, res: Response) {
     }
 
     try {
-        const updatedUser = await prisma.users.update({
+        const updatedUser = await prisma.buyers.update({
             where: {
-                id: parseInt(id),
+                buyer_id: parseInt(id),
             },
             data: {
                 city: newCity,
@@ -207,36 +157,6 @@ export async function ChangeCity(req: Request, res: Response) {
     }
 }
 
-export async function GetAddress(req: Request, res: Response) {
-    const { id } = req.query;
-
-    if (!id || typeof id !== 'string') {
-        return res.status(400).json({ error: 'Invalid or missing user ID' });
-    }
-
-    try {
-        const user = await prisma.users.findUnique({
-            where: {
-                id: parseInt(id),
-            },
-            select: {
-                line1: true,
-                line2: true,
-            },
-        });
-
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-
-        return res.status(200).json({ addressLine1: user.line1, addressLine2: user.line2 });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Internal server error' });
-    }
-}
-
-
 
 export async function ChangeAddress(req: Request, res: Response) {
     const { id, newAddressLine1, newAddressLine2 } = req.body;
@@ -246,9 +166,9 @@ export async function ChangeAddress(req: Request, res: Response) {
     }
 
     try {
-        const updatedUser = await prisma.users.update({
+        const updatedUser = await prisma.buyers.update({
             where: {
-                id: parseInt(id),
+                buyer_id: parseInt(id),
             },
             data: {
                 line1: newAddressLine1,
@@ -262,7 +182,6 @@ export async function ChangeAddress(req: Request, res: Response) {
         return res.status(500).json({ error: 'Internal server error' });
     }
 }
-
 
 
 

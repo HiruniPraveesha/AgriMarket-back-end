@@ -11,7 +11,7 @@ export async function forgotPassword(req: Request, res: Response) {
 
     try {
         // Find the user with the given email
-        const user = await prisma.users.findUnique({
+        const user = await prisma.buyers.findUnique({
             where: { email }
         });
 
@@ -63,7 +63,7 @@ export async function resetPassword(req: Request, res: Response) {
         const hashedPassword = await bcrypt.hash(newPassword, 10);
 
         // Update the user's password
-        await prisma.users.update({
+        await prisma.buyers.update({
             where: { email },
             data: {
                 password: hashedPassword

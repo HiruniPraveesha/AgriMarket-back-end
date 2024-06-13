@@ -6,21 +6,35 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = "postgres://agrimarket_user:FE5WVs3fqrdS4mZbsBrl6qISXUGDdclp@dpg-cpg7o8gl5elc738p96f0-a.singapore-postgres.render.com/agrimarket"
 }
 
-model users {
-  id        Int    @unique @default(autoincrement())
-  name      String
-  email     String @unique
-  line1     String
-  line2     String
-  city      String
-  contactNo String @unique
-  password  String
-  wallet wallet[]
+model buyers {
+  buyer_id    Int            @unique @default(autoincrement())
+  name        String
+  email       String         @unique
+  line1       String?
+  line2       String?
+  city        String?
+  contactNo   String         @unique
+  password    String
+  cart        cart[]
+  wallet      wallet[]
+  addresses   buyerAddress[] 
 }
+
+model buyerAddress {
+  user        buyers @relation(fields: [buyerId], references: [buyer_id])
+  buyerId     Int 
+  line1       String
+  line2       String
+  city        String
+  postalCode  Int
+  @@id([buyerId, line1, line2, city])
+}
+
+
 
 model passwordResetTokens {
   id        Int      @id @unique @default(autoincrement())
@@ -30,18 +44,21 @@ model passwordResetTokens {
 }
 
 model sellers {
-  seller_id     Int        @unique @default(autoincrement())
+  seller_id     Int              @unique @default(autoincrement())
   store_name    String?
-  email         String     @unique
+  email         String           @unique
   line1         String?
   line2         String?
   city          String?
   district      String?
-  contactNo     String?    @unique
+  contactNo     String?          @unique
   password      String?
   OTP           String?
   emailVerified Boolean?
-  products      products[]
+  products      Product[]
+  orders        orders[]
+  notifications notifications[]
+  calendar      calendarEvents[]
 }
 
 model verification_codes {
@@ -50,17 +67,92 @@ model verification_codes {
   code  String
 }
 
-model products {
-  product_id Int      @unique @default(autoincrement())
-  seller     sellers? @relation(fields: [sellerId], references: [seller_id])
-  sellerId   Int?
-  district   String   @map(name: "district")
+model Product {
+  product_id    Int             @id @default(autoincrement())
+  name          String
+  price         Float
+  description   String
+  image         String
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  categoryId    Int
+  category      Category        @relation(fields: [categoryId], references: [category_id], map: "product_category")
+  sellerId      Int
+  seller        sellers         @relation(fields: [sellerId], references: [seller_id], map: "product_seller")
+  notifications notifications[]
+  cart          cartProduct[]
+}
+
+// Define the Category model
+model Category {
+  category_id Int       @id @default(autoincrement())
+  name        String?
+  products    Product[]
+}
+
+model cart {
+  buyerId     Int           @id
+  buyer       buyers        @relation(fields: [buyerId], references: [buyer_id])
+  cartProduct cartProduct[]
+}
+
+model cartProduct {
+  buyerId   Int
+  buyer     cart    @relation(fields: [buyerId], references: [buyerId])
+  productId Int
+  product   Product @relation(fields: [productId], references: [product_id])
+  qty       Int
+
+  @@id([buyerId, productId])
 }
 
 model wallet {
-  wallet_id Int @id @unique @default(autoincrement())
-  user users @relation(fields: [buyerId], references: [id])
-  buyerId Int
-  walletBal Float 
-  ReachargeAmt Float 
+  wallet_id    Int    @id @unique @default(autoincrement())
+  buyer        buyers @relation(fields: [buyerId], references: [buyer_id])
+  buyerId      Int
+  walletBal    Float
+  ReachargeAmt Float
+}
+
+model admin {
+  admin_id Int    @id @default(autoincrement())
+  name     String
+  email    String
+  password String
+}
+
+model orders {
+  order_id Int     @id @default(autoincrement())
+  sellerId Int
+  buyerId  Int
+  seller   sellers @relation(fields: [sellerId], references: [seller_id], map: "puchased_order")
+}
+
+model Payment {
+  payment_id Int      @id @default(autoincrement())
+  buyerId    Int
+  date       DateTime
+  Amount     Float
+}
+
+model calendarEvents {
+  event_id    Int      @id @default(autoincrement())
+  categoryId  Int
+  productId   Int
+  productName String
+  note        String
+  start       DateTime
+  sellerId    Int
+  seller      sellers  @relation(fields: [sellerId], references: [seller_id], map: "calendar")
+}
+
+model notifications {
+  N_id      Int      @id @default(autoincrement())
+  message   String
+  timestamp DateTime
+  Status    String
+  sellerId  Int
+  productid Int
+  product   Product  @relation(fields: [productid], references: [product_id], map: "notification_about")
+  seller    sellers  @relation(fields: [sellerId], references: [seller_id], map: "notification_from")
 }

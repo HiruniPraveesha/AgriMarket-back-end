@@ -14,7 +14,7 @@ export async function signUp(req: Request, res: Response) {
            return res.status(400).json({ error: 'Invalid input format'});
         }
 
-        const existingUser = await prisma.users.findUnique({
+        const existingUser = await prisma.buyers.findUnique({
             where: { contactNo }
         });
 
@@ -27,7 +27,7 @@ export async function signUp(req: Request, res: Response) {
         const OTP = generateOTP();
         await sendOTP(email, OTP);
 
-        await prisma.users.create({
+        await prisma.buyers.create({
             data: {
                 name,
                 email,

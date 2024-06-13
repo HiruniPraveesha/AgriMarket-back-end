@@ -13,7 +13,7 @@ export async function GetWalletBalance(req: Request, res: Response) {
     try {
         const wallet = await prisma.wallet.findFirst({
             where: {
-                wallet_id: parseInt(userId), // Change 'buyerId' to 'wallet_id'
+                wallet_id: parseInt(userId), 
             },
             select: {
                 walletBal: true,
@@ -90,3 +90,4 @@ export async function CreateWallet(req: Request, res: Response) {
         return res.status(500).json({ error: 'Internal server error' });
     }
 }
+
