@@ -42,14 +42,14 @@ export async function GetUserDetails(req: Request, res: Response) {
 export async function ChangeUserName(req: Request, res: Response) {
     const { id, newName } = req.body;
 
-    if (!id || typeof id !== 'string' || !newName || typeof newName !== 'string') {
+    if (!id || !newName) {
         return res.status(400).json({ error: 'Invalid or missing parameters' });
     }
 
     try {
         const updatedUser = await prisma.buyers.update({
             where: {
-                buyer_id: parseInt(id),
+                buyer_id: Number(id),
             },
             data: {
                 name: newName,

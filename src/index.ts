@@ -24,7 +24,7 @@ app.post('/signin', signin);
 app.post('/forgotPassword', forgotPassword);
 app.post('/completeSellerRegistration', completeSellerRegistration);
 app.get('/getUserDetails', GetUserDetails);
-app.post('/changeUserName', ChangeUserName);
+app.put('/changeUserName', ChangeUserName);
 app.post('/changeContactNumber', ChangeContactNumber);
 app.post('/changePassword', ChangePassword),
 app.post('/changeCity', ChangeCity),
