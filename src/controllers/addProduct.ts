@@ -4,11 +4,18 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 export async function addProduct(req: Request, res: Response) {
-    const { name, price, categoryId, sellerId, description } = req.body;
+    const {
+        name,
+        price,
+        description,
+        image,
+        categoryId,
+        sellerId
+    } = req.body;
 
     try {
         // Check if all required fields are provided
-        if (!name || !price || !categoryId || !sellerId || !description) {
+        if (!name || !price || !description || !image || !categoryId || !sellerId) {
             return res.status(400).json({ status: 400, error: 'Invalid input format' });
         }
 
@@ -26,11 +33,10 @@ export async function addProduct(req: Request, res: Response) {
             data: {
                 name,
                 price: parseFloat(price),
+                description,
+                image,
                 categoryId: parseInt(categoryId),
-                sellerId: parseInt(sellerId),
-                image: 'placeholder-image-url.jpg',
-                description
-                // Other fields like image, etc. can be added here
+                sellerId: parseInt(sellerId)
             }
         });
 

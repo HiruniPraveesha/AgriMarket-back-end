@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
@@ -19,6 +20,8 @@ export async function completeSellerRegistration(req: Request, res: Response) {
             return res.status(401).json({ status: 401, error: 'Invalid OTP or seller not registered' });
         }
 
+        const hashedPassword = await bcrypt.hash(password, 10); 
+
         await prisma.sellers.update({
             where: { email },
             data: {
@@ -28,7 +31,7 @@ export async function completeSellerRegistration(req: Request, res: Response) {
                 city,
                 district,
                 contactNo,
-                password,
+                password : hashedPassword,
                 emailVerified: true 
             }
         });
