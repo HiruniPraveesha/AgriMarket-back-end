@@ -62,7 +62,7 @@ export const updateCategoryById = async (id: number, name: string) => {
   try {
     const updatedCategory = await prisma.category.update({
       where: {
-        id: id,
+        category_id: id,
       },
       data: {
         name: name,
@@ -80,7 +80,7 @@ export const deleteCategoryById = async (id: number) => {
   try {
     const deletedCategory = await prisma.category.delete({
       where: {
-        id: id,
+        category_id: id,
       },
     });
     return deletedCategory;
