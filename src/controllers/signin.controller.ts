@@ -58,10 +58,17 @@ export async function signin(req: Request, res: Response) {
         // Generate token
         const token = generateToken({ id: userId, email: user.email });
 
+        const authUserState = {
+            id: userId,
+            email: user.email,
+            // Add any additional state information you need
+        };
+
         const responseMessage = {
             message: 'Sign in successful',
             token,
-            userType
+            userType,
+            authUserState
         };
 
         if (userType === 'buyer') {

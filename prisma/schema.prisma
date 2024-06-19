@@ -6,22 +6,23 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = "postgres://agrimarket_user:FE5WVs3fqrdS4mZbsBrl6qISXUGDdclp@dpg-cpg7o8gl5elc738p96f0-a.singapore-postgres.render.com/agrimarket"
+  provider = "mysql"
+  url      = "mysql://root:1234@localhost:3306/agrimarket"
 }
 
 model buyers {
-  buyer_id  Int            @unique @default(autoincrement())
-  name      String
-  email     String         @unique
-  line1     String?
-  line2     String?
-  city      String?
-  contactNo String         @unique
-  password  String
-  cart      cart[]
-  wallet    wallet[]
-  addresses buyerAddress[]
+  buyer_id    Int               @unique @default(autoincrement())
+  name        String
+  email       String            @unique
+  address     String
+  contactNo   String            @unique
+  password    String
+  otp         String?
+  otpExpireAt DateTime?
+  cart        cart[]
+  wallet      wallet[]
+  addresses   buyerAddress[]
+  reviews     ReviewAndRating[]
 }
 
 model buyerAddress {
@@ -33,13 +34,6 @@ model buyerAddress {
   postalCode Int
 
   @@id([buyerId, line1, line2, city])
-}
-
-model passwordResetTokens {
-  id        Int      @id @unique @default(autoincrement())
-  email     String
-  token     String
-  expiresAt DateTime
 }
 
 model sellers {
@@ -67,19 +61,29 @@ model verification_codes {
 }
 
 model Product {
-  product_id    Int             @id @default(autoincrement())
+  product_id    Int               @id @default(autoincrement())
   name          String
   price         Float
   description   String
-  image         String
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
   categoryId    Int
-  category      Category        @relation(fields: [categoryId], references: [category_id], map: "product_category")
+  category      Category          @relation(fields: [categoryId], references: [category_id], map: "product_category")
   sellerId      Int
-  seller        sellers         @relation(fields: [sellerId], references: [seller_id], map: "product_seller")
+  seller        sellers           @relation(fields: [sellerId], references: [seller_id], map: "product_seller")
   notifications notifications[]
   cart          cartProduct[]
+  reviews       ReviewAndRating[]
+  quantity      Int // Added field
+  quantityLimit Int // Added field
+  images        ProductImage[] // New relation field
+}
+
+model ProductImage {
+  id        Int     @id @default(autoincrement())
+  image     Bytes
+  productId Int
+  product   Product @relation(fields: [productId], references: [product_id], onDelete: Cascade)
 }
 
 // Define the Category model
@@ -154,4 +158,23 @@ model notifications {
   productid Int
   product   Product  @relation(fields: [productid], references: [product_id], map: "notification_about")
   seller    sellers  @relation(fields: [sellerId], references: [seller_id], map: "notification_from")
+}
+
+model ReviewAndRating {
+  id        Int      @id @default(autoincrement())
+  rating    Int
+  comment   String
+  productId Int
+  product   Product  @relation(fields: [productId], references: [product_id], onDelete: Cascade)
+  buyerId   Int
+  buyer     buyers   @relation(fields: [buyerId], references: [buyer_id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model CarouselItem {
+  id        Int      @id @default(autoincrement())
+  imageUrl  String
+  altText   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

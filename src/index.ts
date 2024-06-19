@@ -1,13 +1,19 @@
 import express from 'express';
 import cors from 'cors';
-import { signUp } from './controllers/signup.controller';
+// import { signUp } from './controllers/signup.controller';
 import { signin } from './controllers/signin.controller';
 import { becomeSeller } from './controllers/becomeSeller';
-import { forgotPassword } from './controllers/forgotPassword';
+// import { forgotPassword } from './controllers/forgotPassword';
 import { completeSellerRegistration } from './controllers/completeSellerRegistration';
 import { getAllCategories,createCategory, updateCategoryById, deleteCategoryById } from './controllers/category';
 import { Request, Response } from 'express';
+// import { addProduct } from './controllers/addProduct';
 import { addProduct } from './controllers/addProduct';
+import { getProducts } from './controllers/addProduct';
+import { getProductById } from './controllers/addProduct';
+import { getCartProducts, RemoveProductFromCart } from './controllers/ShoppingCart';
+import { ClearCart } from './controllers/ShoppingCart';
+import { CreateCart } from './controllers/ShoppingCart';
 
 
 const app = express();
@@ -16,13 +22,19 @@ app.use(cors());
 app.use(express.json());
 
 app.post('/becomeSeller', becomeSeller),
-app.post('/signup', signUp);
+// app.post('/signup', signUp);
 app.post('/signin', signin);
-app.post('/forgotPassword', forgotPassword);
+// app.post('/forgotPassword', forgotPassword);
 app.post('/completeSellerRegistration', completeSellerRegistration)
 app.get('/categories', getAllCategories);
-app.post('/addProduct', addProduct)
-
+app.get('/getProducts', getProducts)
+app.get('/getCartProducts', getCartProducts)
+app.post('/getProductById', getProductById);
+// app.post('/addProduct', addProduct)
+app.delete('/removeProduct', RemoveProductFromCart)
+app.delete('/removeAllProducts', ClearCart);
+app.post('/createCart', CreateCart);
+app.post('/addProduct', addProduct);
 app.post('/categories', async (req, res) => {
   const { name } = req.body;
   try {
