@@ -1,46 +1,61 @@
+
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 export async function completeSellerRegistration(req: Request, res: Response) {
-    const { email, store_name, line1, line2, city, district, contactNo, password, OTP } = req.body;
+    const { email, storeName, addressLine1, addressLine2, district, phoneNumber } = req.body;
 
     try {
-        if (!email || !store_name || !line1 || !city || !district || !contactNo || !password || !OTP) {
+        // Check if all required fields are provided
+        if (!email || !storeName || !addressLine1 || !district || !phoneNumber || !addressLine2) {
             return res.status(400).json({ status: 400, error: 'Invalid input format' });
         }
 
-        const existingSeller = await prisma.sellers.findUnique({
+        // Check if seller already exists with the provided email
+        let existingSeller = await prisma.sellers.findUnique({
             where: { email }
         });
-
-        if (!existingSeller || existingSeller.OTP !== OTP) {
-            return res.status(401).json({ status: 401, error: 'Invalid OTP or seller not registered' });
+        if (!existingSeller) {
+            return res.status(404).json({ status: 404, error: 'Seller not found with the provided email' });
         }
 
-        await prisma.sellers.update({
-            where: { email },
-            data: {
-                store_name,
-                line1,
-                line2,
-                city,
-                district,
-                contactNo,
-                password,
-                emailVerified: true // Assuming registration completes email verification
+        // Check if phoneNumber is already in use by another seller
+        const sellerWithPhoneNumber = await prisma.sellers.findFirst({
+            where: {
+                contactNo: phoneNumber,
+                NOT: {
+                    email: existingSeller.email // Exclude the current seller's email from the check
+                }
             }
         });
 
-        return res.status(200).json({ status: 200, message: 'Seller registration completed successfully' });
-    } catch (error: unknown) {
-        if (error instanceof Error) {
-            res.status(400).json({ error: error.message });
-        } else {
-            res.status(500).json({ error: 'Internal Server Error' });
+        if (sellerWithPhoneNumber) {
+            return res.status(400).json({ status: 400, error: 'Phone number is already in use by another seller' });
         }
+
+        // Update the seller's details
+        existingSeller = await prisma.sellers.update({
+            where: { email },
+            data: {
+                store_name: storeName,
+                line1: addressLine1,
+                line2: addressLine2,
+                district,
+                contactNo: phoneNumber,
+                emailVerified: existingSeller.email !== email ? false : existingSeller.emailVerified,
+                // other fields update as needed
+            }
+        });
+
+        return res.status(200).json({ status: 200, message: 'Seller registration completed successfully', data: existingSeller });
+    } catch (error) {
+        console.error('Error completing seller registration:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
     } finally {
         await prisma.$disconnect();
     }
 }
+
+

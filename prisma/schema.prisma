@@ -10,17 +10,17 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model users {
-  id        Int    @unique @default(autoincrement())
+model buyers {
+  buyer_id  Int      @id @default(autoincrement())
   name      String
-  email     String @unique
-  line1     String
-  line2     String
-  city      String
-  contactNo String @unique
+  email     String   @unique
+  address   String
+  contactNo String   @unique
   password  String
+  otp          String?
+  otpExpiresAt DateTime?
+  
 }
-
 model passwordResetTokens {
   id        Int      @id @unique @default(autoincrement())
   email     String
@@ -29,19 +29,21 @@ model passwordResetTokens {
 }
 
 model sellers {
-  seller_id     Int        @unique @default(autoincrement())
+  seller_id     Int              @unique @default(autoincrement())
   store_name    String?
-  email         String     @unique
+  email         String           @unique
   line1         String?
   line2         String?
-  city          String?
   district      String?
-  contactNo     String?    @unique
+  contactNo     String?          @unique
   password      String?
   OTP           String?
-  emailVerified Boolean?
+  otpExpiresAt  DateTime?
+  emailVerified Boolean
   products      products[]
 }
+
+
 
 model verification_codes {
   id    Int    @id @default(autoincrement())
@@ -50,8 +52,15 @@ model verification_codes {
 }
 
 model products {
-  product_id Int      @unique @default(autoincrement())
-  seller     sellers? @relation(fields: [sellerId], references: [seller_id])
-  sellerId   Int?
-  district   String   @map(name: "district")
+  product_id Int          @id @unique @default(autoincrement())
+  seller     sellers      @relation(fields: [sellerId], references: [seller_id])
+  sellerId   Int
+  district   String
+  categories categories[]
+}
+
+model categories {
+  id       Int        @id @unique @default(autoincrement())
+  cat_name String
+  products products[]
 }
