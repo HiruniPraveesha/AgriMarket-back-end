@@ -1,3 +1,4 @@
+
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
@@ -43,18 +44,18 @@ export async function sendOtp(req: Request, res: Response) {
     } else {
       // Generate OTP and set expiration time
       const otp = generateOtp();
-      const otpExpireAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes expiration
+      const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes expiration
 
       if (userByEmail || userByContactNo) {
         // User exists but not registered, update OTP
         await prisma.buyers.update({
-          where: userByEmail ? { email } : { contactNo }, // Corrected where clause to handle email or contact number
-          data: { otp, otpExpireAt, contactNo },
+          where: userByEmail ? { email } : { contactNo }, // Corrected `where` clause to handle email or contact number
+          data: { otp, otpExpiresAt, contactNo },
         });
       } else {
         // User does not exist, create new user with email, OTP, and expiration time
         await prisma.buyers.create({
-          data: { email, otp, otpExpireAt, name: '', address: '', password: '', contactNo },
+          data: { email, otp, otpExpiresAt, name: '', address: '', password: '', contactNo },
         });
       }
 
@@ -63,7 +64,7 @@ export async function sendOtp(req: Request, res: Response) {
         from: 'hirunipraveesha18@gmail.com',
         to: email,
         subject: 'Your OTP Code',
-        text: "Your OTP code is ${otp}",
+        text: `Your OTP code is ${otp}`,
       }, (err, info) => {
         if (err) {
           console.error("Error sending OTP email:", err); // Improved error logging
@@ -106,8 +107,8 @@ export async function signUp(req: Request, res: Response) {
     // Check if the OTP is valid
     if (
       existingUser.otp !== otp || 
-      !existingUser.otpExpireAt || 
-      new Date() > existingUser.otpExpireAt
+      !existingUser.otpExpiresAt || 
+      new Date() > existingUser.otpExpiresAt
     ) {
       return res.status(400).json({ error: 'Invalid or expired OTP' });
     }
@@ -132,7 +133,7 @@ export async function signUp(req: Request, res: Response) {
         contactNo,
         password: hashedPassword,
         otp: null,
-        otpExpireAt: null
+        otpExpiresAt: null
       },
     });
 
@@ -141,5 +142,7 @@ export async function signUp(req: Request, res: Response) {
   } catch (error) {
     console.error("Error creating user:", error); // Improved error logging
     res.status(500).json({ error: "An error occurred while creating the user" });
- }
+  }
 }
+
+

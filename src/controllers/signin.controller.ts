@@ -1,3 +1,5 @@
+
+
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
@@ -6,7 +8,7 @@ import { generateToken } from '../utils/jwtUtils';
 const prisma = new PrismaClient();
 
 export async function signin(req: Request, res: Response) {
-    const { email, contactNo, password } = req.body;
+    const { email, contactNo, password, userType } = req.body;
 
     try {
         if ((!email && !contactNo) || !password) {
@@ -84,3 +86,4 @@ export async function signin(req: Request, res: Response) {
         res.status(500).json({ error: "An error occurred while signing in user" });
     }
 }
+
