@@ -1,5 +1,3 @@
-// Salon registration in mobile app
-
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import nodemailer from 'nodemailer';
