@@ -10,10 +10,12 @@ import { Request, Response } from 'express';
 // import { addProduct } from './controllers/addProduct';
 import { addProduct } from './controllers/addProduct';
 import { getProducts } from './controllers/addProduct';
-import { getProductById } from './controllers/addProduct';
+// import { getProductById } from './controllers/addProduct';
 import { getCartProducts, RemoveProductFromCart } from './controllers/ShoppingCart';
 import { ClearCart } from './controllers/ShoppingCart';
 import { CreateCart } from './controllers/ShoppingCart';
+import { getProductById } from './controllers/product';
+
 
 
 const app = express();
@@ -35,6 +37,10 @@ app.delete('/removeProduct', RemoveProductFromCart)
 app.delete('/removeAllProducts', ClearCart);
 app.post('/createCart', CreateCart);
 app.post('/addProduct', addProduct);
+
+app.get('/product/:productId', getProductById);
+
+
 app.post('/categories', async (req, res) => {
   const { name } = req.body;
   try {

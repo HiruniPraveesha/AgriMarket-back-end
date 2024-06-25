@@ -33,7 +33,6 @@ export async function signin(req: Request, res: Response) {
         // Select the found user
         const user = buyer || seller;
         const userType = buyer ? 'buyer' : 'seller';
-        
 
         // Ensure the user is not null before proceeding
         if (!user || !user.password) {
@@ -68,17 +67,19 @@ export async function signin(req: Request, res: Response) {
             message: 'Sign in successful',
             token,
             userType,
-            authUserState
+            authUserState,
+            sellerId: userId
         };
 
         if (userType === 'buyer') {
             return res.status(202).json({ ...responseMessage, message: 'Buyer sign in successful' });
         } else {
-            console.log("seller");
-            return res.status(201).json({ ...responseMessage, message: 'Seller sign in successful' });
+            return res.status(201).json({ 
+                ...responseMessage, 
+                message: 'Seller sign in successful', 
+                
+            });
         }
-
-
     } catch (error) {
         console.error("Error signing in user:", error);
         res.status(500).json({ error: "An error occurred while signing in user" });
