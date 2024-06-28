@@ -47,14 +47,14 @@ export const getReviewsByProductId = async (req: Request, res: Response) => {
 // Function to create a new review and rating
 export const createReview = async (req: Request, res: Response) => {
   const { rating, comment, productId, buyerId } = req.body;
+
+  if (rating == null || !comment || !productId || !buyerId) {
+    return res.status(400).json({ error: 'All fields are required' });
+  }
+
   try {
     const newReview = await prisma.reviewAndRating.create({
-      data: {
-        rating,
-        comment,
-        productId,
-        buyerId,
-      },
+      data: { rating, comment, productId, buyerId },
     });
     res.status(201).json(newReview);
   } catch (error) {

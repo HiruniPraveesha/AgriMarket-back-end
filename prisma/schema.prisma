@@ -72,6 +72,8 @@ model Product {
   category      Category        @relation(fields: [categoryId], references: [category_id], map: "product_category")
   sellerId      Int
   seller        sellers         @relation(fields: [sellerId], references: [seller_id], map: "product_seller")
+  quantity      Int // Added field
+  quantityLimit Int // Added field
   notifications notifications[]
   cart          cartProduct[]
   reviews       ReviewAndRating[]

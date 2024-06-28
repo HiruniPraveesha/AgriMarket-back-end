@@ -64,6 +64,8 @@ CREATE TABLE `Product` (
     `updatedAt` DATETIME(3) NOT NULL,
     `categoryId` INTEGER NOT NULL,
     `sellerId` INTEGER NOT NULL,
+    `quantity` INTEGER NOT NULL,
+    `quantityLimit` INTEGER NOT NULL,
 
     PRIMARY KEY (`product_id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
