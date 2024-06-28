@@ -19,6 +19,8 @@ model buyers {
   password  String
   otp          String?
   otpExpiresAt DateTime?
+  review ReviewAndRating[]
+  
   
 }
 model passwordResetTokens {
@@ -26,10 +28,11 @@ model passwordResetTokens {
   email     String
   token     String
   expiresAt DateTime
+  userType   String
 }
 
 model sellers {
-  seller_id     Int              @unique @default(autoincrement())
+  seller_id     Int              @id @default(autoincrement())
   store_name    String?
   email         String           @unique
   line1         String?
@@ -40,7 +43,25 @@ model sellers {
   OTP           String?
   otpExpiresAt  DateTime?
   emailVerified Boolean
-  products      products[]
+  profilePic    String?
+  products      Product[]
+  
+  // Relationship to SellerVerification
+  sellerBankVerification SellerBankVerification?
+}
+
+// Define verifyBank model
+model SellerBankVerification {
+  id             Int              @id @unique @default(autoincrement())
+  seller         sellers         @relation(fields: [seller_id], references: [seller_id])
+  seller_id      Int @unique
+  idFrontPhoto   String?          // Store URL or path to front side of ID photo
+  idBackPhoto    String?          // Store URL or path to back side of ID photo
+  bankBookPhoto  String?          // Store URL or path to bank book front page photo
+  bankName       String?          // Name of the bank
+  accountHolder  String?          // Name of the account holder
+  bankCode       String?          // IFSC code of the bank
+  accountNumber  String?          // Bank account number
 }
 
 
@@ -51,16 +72,42 @@ model verification_codes {
   code  String
 }
 
-model products {
-  product_id Int          @id @unique @default(autoincrement())
-  seller     sellers      @relation(fields: [sellerId], references: [seller_id])
-  sellerId   Int
-  district   String
-  categories categories[]
+model Product {
+  product_id    Int             @id @default(autoincrement())
+  name          String
+  price         Float
+  description   String
+  image         String
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+   categoryId    Int
+  category      Category        @relation(fields: [categoryId], references: [category_id], map: "product_category")
+  sellerId      Int
+  seller        sellers         @relation(fields: [sellerId], references: [seller_id], map: "product_seller")
+  quantity      Int // Added field
+  quantityLimit Int // Added field
+  //notifications notifications[]
+  //cart          cartProduct[]
+  review       ReviewAndRating[]
+
+  
 }
 
-model categories {
-  id       Int        @id @unique @default(autoincrement())
-  cat_name String
-  products products[]
+
+// Define the Category model
+model Category {
+  category_id Int       @id @default(autoincrement())
+  name        String?
+  products    Product[]
+}
+
+model ReviewAndRating {
+  id        Int       @id @default(autoincrement())
+  rating    Int
+  comment   String
+  productId Int
+  product   Product   @relation(fields: [productId], references: [product_id], onDelete: Cascade)
+  buyerId   Int
+  buyer     buyers    @relation(fields: [buyerId], references: [buyer_id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
 }

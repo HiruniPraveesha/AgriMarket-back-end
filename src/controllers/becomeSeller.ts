@@ -3,8 +3,33 @@ import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import nodemailer from 'nodemailer';
 import bcrypt from 'bcrypt';
+import cron from 'node-cron';
 
 const prisma = new PrismaClient();
+
+async function cleanupIncompleteRegistrations() {
+    try {
+        const thresholdDate = new Date();
+        thresholdDate.setMinutes(thresholdDate.getMinutes() - 6); // Set the threshold to 6 minutes ago
+
+        await prisma.sellers.deleteMany({
+            where: {
+                emailVerified: false,
+            },
+        });
+
+        console.log('Incomplete registrations cleaned up');
+    } catch (error) {
+        console.error('Error cleaning up incomplete registrations:', error);
+    }
+    finally {
+        await prisma.$disconnect();
+    }
+}
+
+
+// Schedule cleanup task to run every 6 minutes
+cron.schedule('*/6 * * * *', cleanupIncompleteRegistrations);
 
 export async function becomeSeller(req: Request, res: Response) {
     const { email, otp, password, action } = req.body;
@@ -19,24 +44,47 @@ export async function becomeSeller(req: Request, res: Response) {
                 where: { email }
             });
 
+            const currentTime = new Date();
+            const resendDelay = 60 * 1000; // 60 seconds
+
             if (existingSeller) {
-                return res.status(401).json({ status: 401, error: 'Seller with this email already exists' });
+                if (existingSeller.emailVerified) {
+                    return res.status(401).json({ status: 401, error: 'Seller with this email already exists' });
+                }
+
+                if (existingSeller.otpExpiresAt && currentTime.getTime() < new Date(existingSeller.otpExpiresAt).getTime()) {
+                    return res.status(429).json({ status: 429, error: 'OTP can only be resent after 60 seconds' });
+                }
+
+                const OTP = generateOTP();
+                const otpExpiresAt = new Date(Date.now() + 5 * 60000); // 5 minutes from now
+                await sendOTP(email, OTP);
+
+                await prisma.sellers.update({
+                    where: { email },
+                    data: {
+                        OTP,
+                        otpExpiresAt: new Date(Date.now() + resendDelay) // Set the new OTP expiration time
+                    }
+                });
+
+                return res.status(201).json({ status: 201, message: 'OTP sent successfully' });
+            } else {
+                const OTP = generateOTP();
+                const otpExpiresAt = new Date(Date.now() + 5 * 60000); // 5 minutes from now
+                await sendOTP(email, OTP);
+
+                await prisma.sellers.create({
+                    data: {
+                        email,
+                        OTP,
+                        otpExpiresAt: new Date(Date.now() + resendDelay), // Set the new OTP expiration time
+                        emailVerified: false
+                    },
+                });
+
+                return res.status(201).json({ status: 201, message: 'OTP sent successfully' });
             }
-
-            const OTP = generateOTP();
-            const otpExpiresAt = new Date(Date.now() + 5 * 60000); // 5 minutes from now
-            await sendOTP(email, OTP);
-
-            await prisma.sellers.create({
-                data: {
-                    email,
-                    OTP,
-                    otpExpiresAt,
-                    emailVerified: false
-                },
-            });
-
-            return res.status(201).json({ status: 201, message: 'OTP sent successfully' });
         } else if (action === 'verifyOtp') {
             if (!otp) {
                 return res.status(400).json({ status: 400, error: 'OTP is required' });
@@ -102,13 +150,13 @@ async function sendOTP(email: string, otp: string) {
     try {
         const transporter = nodemailer.createTransport({
             service: 'gmail',
-        auth: {
-            user: 'hirunipraveesha18@gmail.com',
-            pass: 'kmcixcgcspcmbfnr' // Replace with your actual app-specific password
-        },
-        tls: {
-            rejectUnauthorized: false
-        }
+            auth: {
+                user: 'hirunipraveesha18@gmail.com',
+                pass: 'kmcixcgcspcmbfnr' // Replace with your actual app-specific password
+            },
+            tls: {
+                rejectUnauthorized: false
+            }
         });
 
         const htmlTemplate = `
@@ -121,9 +169,9 @@ async function sendOTP(email: string, otp: string) {
 
         const info = await transporter.sendMail({
             from: 'hirunipraveesha18@gmail.com',
-        to: email,
-        subject: 'Agrimarket OTP for Seller Registration',
-        html: htmlTemplate
+            to: email,
+            subject: 'Agrimarket OTP for Seller Registration',
+            html: htmlTemplate
         });
 
         console.log('Message sent: %s', info.messageId);
@@ -132,4 +180,3 @@ async function sendOTP(email: string, otp: string) {
         throw new Error('Failed to send OTP. Please try again.');
     }
 }
-
