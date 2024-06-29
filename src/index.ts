@@ -1,9 +1,23 @@
 import express from 'express';
 import cors from 'cors';
 import { Request, Response } from 'express';
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
 
+import { signin } from './controllers/signincontroller';
 import dotenv from 'dotenv';
 import * as reviewAndRatingController from './controllers/reviewsAndRating';
+import { sendOtp, signUp } from './controllers/signupcontroller';
+import { authenticateToken } from './middlewares/secrets';
+import { becomeSeller } from './controllers/becomeSeller';
+import { completeSellerRegistration } from './controllers/completeSellerRegistration';
+// import { uploadMiddleware1, verifyBank } from './controllers/verifyBank';
+import { getSellerDetails, getSellerProducts } from './controllers/sellerProfile';
+import { getAllCategories1 } from './controllers/categoryController';
+import { getAllProducts1 } from './controllers/productController';
+import { getAllNotifications } from './controllers/Notification';
+// import { getProductsAndSellerCities } from './controllers/seller-city';
+import { getCalendarEvents } from './controllers/calendarController';
 
 import {
    getAllCategories,
@@ -109,7 +123,86 @@ app.delete('/reviews/:id', reviewAndRatingController.deleteReviewById);
 app.get('/reviews/:productId/ratingTotals', reviewAndRatingController.getRatingTotalsByProductId);
 app.get('/reviews/count/:productId', reviewAndRatingController.getReviewCountByProductId);
 
-  
+
+app.get('/protected-route', authenticateToken, (_req, res) => {
+  res.json({ message: "This is a protected route" });
+});
+app.post('/signin', signin);
+app.post('/become-seller', becomeSeller);
+app.post('/send-otp', sendOtp); 
+app.post('/signup', signUp);
+//  app.post('/api/verify-bank/:sellerId', uploadMiddleware, verifyBank);
+app.post('/completeSellerRegistration', completeSellerRegistration);
+app.get('/api/seller/details', getSellerDetails);
+app.get('/api/seller/products', getSellerProducts);
+
+app.get('/Category', getAllCategories1);
+app.get('/Product', getAllProducts1);
+app.get('/Notification', getAllNotifications);
+// app.get('/products-seller-cities', getProductsAndSellerCities);
+app.get('/CalendarBuyer', getCalendarEvents); 
+
+
+
+
+//search
+app.get('/api/search', async (req, res) => {
+  const { keyword, category } = req.query;
+
+  try {
+    let results;
+
+    // Ensure keyword and category are strings
+    const keywordString = typeof keyword === 'string' ? keyword : undefined;
+    const categoryString = typeof category === 'string' ? category : undefined;
+
+    if (categoryString && keywordString) {
+      results = await prisma.product.findMany({
+        where: {
+          AND: [
+            {
+              name: {
+                contains: keywordString,
+              },
+            },
+            {
+              category: {
+                name: {
+                  contains: categoryString,
+                },
+              },
+            },
+          ],
+        },
+      });
+    } else if (keywordString) {
+      results = await prisma.product.findMany({
+        where: {
+          name: {
+            contains: keywordString,
+          },
+        },
+      });
+    } else if (categoryString) {
+      results = await prisma.product.findMany({
+        where: {
+          category: {
+            name: {
+              contains: categoryString,
+            },
+          },
+        },
+      });
+    } else {
+      results = await prisma.product.findMany();
+    }
+
+    res.json(results);
+  } catch (error) {
+    console.error('Error fetching search results:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 const PORT = process.env.PORT || 8000;
 

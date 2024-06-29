@@ -7,15 +7,15 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = "mysql://prisma:Iphone7@0928@localhost:3306/agrimarket"
+  url      = "mysql://root:M%ckwfrbfd07EhCn7kvEc8d@localhost:3306/agrimarket"
 }
 
 model buyers {
-  buyer_id    Int            @unique @default(autoincrement())
+  buyer_id    Int               @unique @default(autoincrement())
   name        String
-  email       String         @unique
+  email       String            @unique
   address     String
-  contactNo   String         @unique
+  contactNo   String            @unique
   password    String
   otp         String?
   otpExpireAt DateTime?
@@ -26,32 +26,49 @@ model buyers {
 }
 
 model buyerAddress {
-  user        buyers @relation(fields: [buyerId], references: [buyer_id])
-  buyerId     Int 
-  line1       String
-  line2       String
-  city        String
-  postalCode  Int
+  user       buyers @relation(fields: [buyerId], references: [buyer_id])
+  buyerId    Int
+  line1      String
+  line2      String
+  city       String
+  postalCode Int
+
   @@id([buyerId, line1, line2, city])
 }
 
-
 model sellers {
-  seller_id     Int              @unique @default(autoincrement())
-  store_name    String?
-  email         String           @unique
-  line1         String?
-  line2         String?
-  city          String?
-  district      String?
-  contactNo     String?          @unique
-  password      String?
-  OTP           String?
-  emailVerified Boolean?
-  products      Product[]
-  orders        orders[]
-  notifications notifications[]
-  calendar      calendarEvents[]
+  seller_id              Int                     @unique @default(autoincrement())
+  store_name             String?
+  email                  String                  @unique
+  line1                  String?
+  line2                  String?
+  district               String?
+  contactNo              String?                 @unique
+  password               String?
+  OTP                    String? // Changed OTP to otp
+  otpExpiresAt           DateTime?
+  emailVerified          Boolean
+  profilePic             String?
+  // sellerCity             city                    @relation(fields: [line1], references: [city_name])
+  products               Product[]
+  orders                 orders[]
+  notifications          notifications[]
+  calendar               calendarEvents[]
+  sellerBankVerification SellerBankVerification?
+}
+
+model SellerBankVerification {
+  id            Int     @id @unique @default(autoincrement())
+  seller        sellers @relation(fields: [seller_id], references: [seller_id])
+  seller_id     Int     @unique
+  idNumber      String?
+  idFrontPhoto  String? // Store URL or path to front side of ID photo
+  idBackPhoto   String? // Store URL or path to back side of ID photo
+  bankBookPhoto String? // Store URL or path to bank book front page photo
+  bankName      String? // Name of the bank
+  accountHolder String? // Name of the account holder
+  bankCode      String? // IFSC code of the bank
+  accountNumber String? // Bank account number
 }
 
 model verification_codes {
@@ -61,17 +78,17 @@ model verification_codes {
 }
 
 model Product {
-  product_id    Int             @id @default(autoincrement())
+  product_id    Int               @id @default(autoincrement())
   name          String
   price         Float
   description   String
   image         String
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
   categoryId    Int
-  category      Category        @relation(fields: [categoryId], references: [category_id], map: "product_category")
+  category      Category          @relation(fields: [categoryId], references: [category_id], map: "product_category")
   sellerId      Int
-  seller        sellers         @relation(fields: [sellerId], references: [seller_id], map: "product_seller")
+  seller        sellers           @relation(fields: [sellerId], references: [seller_id], map: "product_seller")
   quantity      Int // Added field
   quantityLimit Int // Added field
   notifications notifications[]
@@ -154,14 +171,14 @@ model notifications {
 }
 
 model ReviewAndRating {
-  id        Int       @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   rating    Int
   comment   String
   productId Int
-  product   Product   @relation(fields: [productId], references: [product_id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [product_id], onDelete: Cascade)
   buyerId   Int
-  buyer     buyers    @relation(fields: [buyerId], references: [buyer_id], onDelete: Cascade)
-  createdAt DateTime  @default(now())
+  buyer     buyers   @relation(fields: [buyerId], references: [buyer_id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 }
 
 model CarouselItem {
@@ -170,4 +187,11 @@ model CarouselItem {
   altText   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model city {
+  city_name String @id
+  lat       Float
+  lng       Float
+  // sellerCity sellers[]
 }

@@ -27,22 +27,6 @@ export const getAllCategories = async () => {
   }
 };
 
-// Express route handler
-// export const getAllCategories = async (req: Request, res: Response) => {
-//   try {
-//     const categoryNames = await getAllCategoryNames();
-//     console.log(categoryNames)
-//     res.status(200).json({
-//       "data":categoryNames
-//     });
-//   } catch (error) {
-//     console.error('Error fetching category names:', error);
-//     res.status(500).json({ error: 'Internal Server Error' });
-//   }
-// };
-
-
-
 // Function to create a new category
 export const createCategory = async (name: string) => {
   try {
