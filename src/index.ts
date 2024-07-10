@@ -23,6 +23,8 @@ import {
   uploadMiddleware
 } from './controllers/product';
 
+import { getSellerNameById } from './controllers/seller';
+
 import { signin } from './controllers/signincontroller';
 
 dotenv.config();
@@ -77,6 +79,7 @@ app.delete('/reviews/:id', reviewAndRatingController.deleteReviewById);
 app.get('/reviews/:productId/ratingTotals', reviewAndRatingController.getRatingTotalsByProductId);
 app.get('/reviews/count/:productId', reviewAndRatingController.getReviewCountByProductId);
 
+app.get('/sellers/:sellerId', getSellerNameById);
 
 app.post('/signin', signin);
 
