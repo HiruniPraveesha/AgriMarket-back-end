@@ -27,21 +27,45 @@ export const getAllCategories = async () => {
   }
 };
 
-// Express route handler
-// export const getAllCategories = async (req: Request, res: Response) => {
-//   try {
-//     const categoryNames = await getAllCategoryNames();
-//     console.log(categoryNames)
-//     res.status(200).json({
-//       "data":categoryNames
-//     });
-//   } catch (error) {
-//     console.error('Error fetching category names:', error);
-//     res.status(500).json({ error: 'Internal Server Error' });
-//   }
-// };
+// Function to fetch category ID by name
+export const getCategoryIdByName = async (name: string): Promise<number | null> => {
+  try {
+    const category = await prisma.category.findFirst({
+      where: {
+        name: name,
+      },
+      select: {
+        category_id: true,
+      },
+    });
 
+    return category ? category.category_id : null;
+  } catch (error) {
+    console.error('Error fetching category ID:', error);
+    throw error; // Handle or throw an appropriate error
+  }
+};
 
+// Function to get category name by ID
+export const getCategoryNameById = async (id: number) => {
+  try {
+    const category = await prisma.category.findUnique({
+      where: {
+        category_id: id,
+      },
+      select: {
+        name: true,
+      },
+    });
+    if (!category) {
+      throw new Error('Category not found');
+    }
+    return category.name;
+  } catch (error) {
+    console.error('Error fetching category name by ID:', error);
+    throw new Error('Internal Server Error');
+  }
+};
 
 // Function to create a new category
 export const createCategory = async (name: string) => {
@@ -91,23 +115,4 @@ export const deleteCategoryById = async (id: number) => {
   }
 };
 
-// Function to get category name by ID
-export const getCategoryNameById = async (id: number) => {
-  try {
-    const category = await prisma.category.findUnique({
-      where: {
-        category_id: id,
-      },
-      select: {
-        name: true,
-      },
-    });
-    if (!category) {
-      throw new Error('Category not found');
-    }
-    return category.name;
-  } catch (error) {
-    console.error('Error fetching category name by ID:', error);
-    throw new Error('Internal Server Error');
-  }
-};
+

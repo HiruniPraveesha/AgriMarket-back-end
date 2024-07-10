@@ -11,12 +11,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.370.0",
     "@prisma/client": "^5.16.1",
     "@types/bcrypt": "^5.0.2",
     "@types/dotenv": "^8.2.0",
     "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.5",
-    "@aws-sdk/client-s3": "^3.370.0",  
     "aws-sdk": "^2.1650.0",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.6",
