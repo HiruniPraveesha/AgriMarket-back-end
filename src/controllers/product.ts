@@ -27,6 +27,7 @@ const upload = multer({
   storage: multerS3({
     s3: s3,
     bucket: process.env.AWS_BUCKET_NAME || '',
+    acl: 'public-read',
     key: function (_req, file, cb) {
       const ext = path.extname(file.originalname);
       const uniqueSuffix = `${Math.random().toString(36).substring(2, 15)}`;
