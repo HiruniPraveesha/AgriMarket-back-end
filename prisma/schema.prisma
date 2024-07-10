@@ -94,13 +94,16 @@ model Product {
   notifications notifications[]
   cart          cartProduct[]
   reviews       ReviewAndRating[]
+  calendar      calendarEvents[]
 }
 
 // Define the Category model
 model Category {
-  category_id Int       @id @default(autoincrement())
-  name        String?
-  products    Product[]
+  category_id   Int              @id @default(autoincrement())
+  name          String?
+  products      Product[]
+  calendar      calendarEvents[]
+  notifications notifications[]
 }
 
 model cart {
@@ -149,25 +152,36 @@ model Payment {
 }
 
 model calendarEvents {
-  event_id    Int      @id @default(autoincrement())
-  categoryId  Int
-  productId   Int
-  productName String
-  note        String
-  start       DateTime
-  sellerId    Int
-  seller      sellers  @relation(fields: [sellerId], references: [seller_id], map: "calendar")
+  event_id   Int      @id @default(autoincrement())
+  categoryId Int
+  productId  Int
+  note       String
+  start      DateTime
+  sellerId   Int
+  seller     sellers  @relation(fields: [sellerId], references: [seller_id], map: "calendar")
+  product    Product  @relation(fields: [productId], references: [product_id])
+  category   Category @relation(fields: [categoryId], references: [category_id])
 }
 
 model notifications {
-  N_id      Int      @id @default(autoincrement())
-  message   String
-  timestamp DateTime
-  Status    String
-  sellerId  Int
-  productid Int
-  product   Product  @relation(fields: [productid], references: [product_id], map: "notification_about")
-  seller    sellers  @relation(fields: [sellerId], references: [seller_id], map: "notification_from")
+  N_id       Int                  @id @default(autoincrement())
+  message    String
+  timestamp  DateTime
+  categoryId Int
+  sellerId   Int
+  productId  Int
+  image      String?
+  product    Product              @relation(fields: [productId], references: [product_id], map: "notification_about")
+  seller     sellers              @relation(fields: [sellerId], references: [seller_id], map: "notification_from")
+  read       notification_reads[]
+  Category   Category             @relation(fields: [categoryId], references: [category_id])
+}
+
+model notification_reads {
+  id             Int           @id @default(autoincrement())
+  notification   notifications @relation(fields: [notificationId], references: [N_id])
+  notificationId Int
+  buyerId        Int
 }
 
 model ReviewAndRating {
