@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { Request, Response, NextFunction} from 'express';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+
 import multer from 'multer';
 import multerS3 from 'multer-s3';
 import path from 'path';
@@ -9,6 +10,10 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const prisma = new PrismaClient();
+
+interface MulterS3File extends Express.Multer.File {
+  location: string;
+}
 
 const s3 = new S3Client({
   region: 'eu-north-1', // Update with your AWS region
@@ -22,25 +27,28 @@ const upload = multer({
   storage: multerS3({
     s3: s3,
     bucket: process.env.AWS_BUCKET_NAME || '',
+    acl: 'public-read',
     key: function (_req, file, cb) {
       const ext = path.extname(file.originalname);
-      cb(null, `${Date.now().toString()}${ext}`);
+      const uniqueSuffix = `${Math.random().toString(36).substring(2, 15)}`;
+      cb(null, `${Date.now().toString()}-${uniqueSuffix}${ext}`);
     },
+    
   }),
 });
 
-interface MulterS3File extends Express.Multer.File {
-  location: string;
-}
 
-async function addProduct(req: Request, res: Response) {
-  const { name, price, description, categoryId, sellerId, quantity, quantityLimit } = req.body;
+const addProduct = async (req: Request, res: Response) => {
+  console.log('Request body:', req.body);
+  console.log('Files:', req.files);
+
+  const { name, price, description, categoryId, sellerName, quantity, quantityLimit } = req.body;
 
   try {
-    // Verify seller existence
-    const seller = await prisma.sellers.findUnique({
+    // Verify seller existence by name
+    const seller = await prisma.sellers.findFirst({
       where: {
-        seller_id: parseInt(sellerId),
+        store_name: sellerName,
       },
     });
 
@@ -48,14 +56,25 @@ async function addProduct(req: Request, res: Response) {
       return res.status(404).json({ error: 'Seller not found' });
     }
 
-    // Check if files and 'image' field exist in the request
+    const sellerId = seller.seller_id;
+
+    // Check if files and 'image' fields exist in the request
     const files = req.files as { [fieldname: string]: Express.MulterS3.File[] } | undefined;
-    if (!files || !files['image']) {
-      return res.status(400).json({ error: 'Image file is required' });
+    if (!files || !files['image1'] || !files['image2'] || !files['image3'] || !files['image4']) {
+      return res.status(400).json({ error: 'Four image files are required' });
     }
 
-    // Get the location of the uploaded image
-    const image = files['image'][0].location; // Assuming 'image' is the field name in the form
+    // Get the locations of the uploaded images
+    const image1 = files['image1'][0].location;
+    const image2 = files['image2'][0].location;
+    const image3 = files['image3'][0].location;
+    const image4 = files['image4'][0].location;
+
+    // Validate and convert categoryId to an integer
+    const categoryIdInt = parseInt(categoryId, 10);
+    if (isNaN(categoryIdInt)) {
+      return res.status(400).json({ error: 'Invalid categoryId' });
+    }
 
     // Create the product using Prisma
     const product = await prisma.product.create({
@@ -63,14 +82,17 @@ async function addProduct(req: Request, res: Response) {
         name,
         price: parseFloat(price),
         description,
-        image,
+        image1,
+        image2,
+        image3,
+        image4,
         quantity: parseInt(quantity, 10),
         quantityLimit: parseInt(quantityLimit, 10),
         category: {
-          connect: { category_id: parseInt(categoryId, 10) },
+          connect: { category_id: categoryIdInt },
         },
         seller: {
-          connect: { seller_id: parseInt(sellerId, 10) },
+          connect: { seller_id: sellerId },
         },
       },
       include: {
@@ -83,15 +105,17 @@ async function addProduct(req: Request, res: Response) {
     console.error('Error adding product:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
-}
+};
 
-
-const uploadMiddleware = upload.fields([{ name: 'image', maxCount: 1 }]);
+const uploadMiddleware = upload.fields([
+  { name: 'image1', maxCount: 1 },
+  { name: 'image2', maxCount: 1 },
+  { name: 'image3', maxCount: 1 },
+  { name: 'image4', maxCount: 1 }
+]);
 
 export { addProduct, uploadMiddleware };
 
-
-//old==================================================================================================
 export const getAllProductsData = async () => {
     try {
       const products = await prisma.product.findMany({

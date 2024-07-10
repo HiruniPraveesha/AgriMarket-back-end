@@ -152,7 +152,7 @@ app.put('/products/:id', updateProduct);
 app.delete('/products/:id', deleteProduct);
 
 // Routes
-app.post('/add-product/:sellerId', uploadMiddleware, addProduct);
+app.post('/add-product', uploadMiddleware, addProduct);
 // Routes
 app.get('/reviews', reviewAndRatingController.getAllReviews);
 app.get('/reviews/:productId', reviewAndRatingController.getReviewsByProductId);
