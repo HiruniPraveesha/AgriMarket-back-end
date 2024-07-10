@@ -12,6 +12,7 @@ datasource db {
 
 model buyers {
   buyer_id  Int      @id @default(autoincrement())
+  profilePhoto  String?
   name      String
   email     String   @unique
   address   String
@@ -20,15 +21,19 @@ model buyers {
   otp          String?
   otpExpiresAt DateTime?
   review ReviewAndRating[]
+  addresses   buyerAddress[]
   
   
 }
-model passwordResetTokens {
-  id        Int      @id @unique @default(autoincrement())
-  email     String
-  token     String
-  expiresAt DateTime
-  userType   String
+model buyerAddress {
+  user       buyers @relation(fields: [buyerId], references: [buyer_id])
+  buyerId    Int
+  line1      String
+  line2      String
+  city       String
+  postalCode Int
+
+  @@id([buyerId, line1, line2, city])
 }
 
 model sellers {
@@ -55,6 +60,7 @@ model SellerBankVerification {
   id             Int              @id @unique @default(autoincrement())
   seller         sellers         @relation(fields: [seller_id], references: [seller_id])
   seller_id      Int @unique
+  idNumber       String?
   idFrontPhoto   String?          // Store URL or path to front side of ID photo
   idBackPhoto    String?          // Store URL or path to back side of ID photo
   bankBookPhoto  String?          // Store URL or path to bank book front page photo

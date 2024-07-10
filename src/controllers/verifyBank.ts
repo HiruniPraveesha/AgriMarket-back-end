@@ -36,12 +36,13 @@ interface MulterS3File extends Express.Multer.File {
 }
 
 async function verifyBank(req: Request, res: Response) {
-  const { sellerId, bankName, accountHolder, bankCode, accountNumber } = req.body;
+  const { sellerId } = req.params; 
+  const { idNumber, bankName, accountHolder, bankCode, accountNumber } = req.body;
 
   
   try {
     const parsedSellerId = parseInt(sellerId, 10);
-
+    
     if (isNaN(parsedSellerId)) {
       return res.status(400).json({ error: 'Invalid seller ID' });
     }
@@ -66,6 +67,7 @@ async function verifyBank(req: Request, res: Response) {
     const bankVerification = await prisma.sellerBankVerification.create({
       data: {
         seller: { connect: { seller_id: parsedSellerId } },
+        idNumber,
         idFrontPhoto,
         idBackPhoto,
         bankBookPhoto,

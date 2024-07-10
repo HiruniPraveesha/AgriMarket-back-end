@@ -43,7 +43,7 @@ export async function sendOtp(req: Request, res: Response) {
   if (!email || !contactNo) {
     return res.status(400).json({ error: 'Email and contact number are required' });
   }
-
+ 
   try {
     // Check if the user exists by email or contact number
     const userByEmail = await prisma.buyers.findUnique({ where: { email } });

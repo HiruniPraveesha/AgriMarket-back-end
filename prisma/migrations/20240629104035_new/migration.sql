@@ -1,6 +1,7 @@
 -- CreateTable
 CREATE TABLE `buyers` (
     `buyer_id` INTEGER NOT NULL AUTO_INCREMENT,
+    `profilePhoto` VARCHAR(191) NULL,
     `name` VARCHAR(191) NOT NULL,
     `email` VARCHAR(191) NOT NULL,
     `address` VARCHAR(191) NOT NULL,
@@ -15,15 +16,14 @@ CREATE TABLE `buyers` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `passwordResetTokens` (
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `email` VARCHAR(191) NOT NULL,
-    `token` VARCHAR(191) NOT NULL,
-    `expiresAt` DATETIME(3) NOT NULL,
-    `userType` VARCHAR(191) NOT NULL,
+CREATE TABLE `buyerAddress` (
+    `buyerId` INTEGER NOT NULL,
+    `line1` VARCHAR(191) NOT NULL,
+    `line2` VARCHAR(191) NOT NULL,
+    `city` VARCHAR(191) NOT NULL,
+    `postalCode` INTEGER NOT NULL,
 
-    UNIQUE INDEX `passwordResetTokens_id_key`(`id`),
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`buyerId`, `line1`, `line2`, `city`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -50,6 +50,7 @@ CREATE TABLE `sellers` (
 CREATE TABLE `SellerBankVerification` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `seller_id` INTEGER NOT NULL,
+    `idNumber` VARCHAR(191) NULL,
     `idFrontPhoto` VARCHAR(191) NULL,
     `idBackPhoto` VARCHAR(191) NULL,
     `bankBookPhoto` VARCHAR(191) NULL,
@@ -108,6 +109,9 @@ CREATE TABLE `ReviewAndRating` (
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- AddForeignKey
+ALTER TABLE `buyerAddress` ADD CONSTRAINT `buyerAddress_buyerId_fkey` FOREIGN KEY (`buyerId`) REFERENCES `buyers`(`buyer_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `SellerBankVerification` ADD CONSTRAINT `SellerBankVerification_seller_id_fkey` FOREIGN KEY (`seller_id`) REFERENCES `sellers`(`seller_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
