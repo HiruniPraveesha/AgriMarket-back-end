@@ -1,8 +1,12 @@
 import express from 'express';
+import { Sequelize } from 'sequelize';
+import SequelizeStore from 'connect-session-sequelize';
+import { SellerSessionData } from './middlewares/sessionConfig';
+import session from 'express-session';
 import cors from 'cors';
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
+// const prisma = new PrismaClient();
 
 import { signin } from './controllers/signincontroller';
 import dotenv from 'dotenv';
@@ -18,6 +22,7 @@ import { getAllProducts1 } from './controllers/productController';
 import { getAllNotifications } from './controllers/Notification';
 // import { getProductsAndSellerCities } from './controllers/seller-city';
 import { getCalendarEvents } from './controllers/calendarController';
+import { verifyBank, uploadMiddleware2 } from './controllers/verifyBank';
 
 import {
    getAllCategories,
@@ -43,10 +48,44 @@ import {
 
 dotenv.config();
 
+const prisma = new PrismaClient();
 const app = express();
-app.use(cors());
+
+// Initialize Sequelize using DATABASE_URL from the environment variables
+const sequelize = new Sequelize(process.env.DATABASE_URL as string);
+
+const SessionStore = SequelizeStore(session.Store);
+const store = new SessionStore({ db: sequelize });
+
+app.use(session({
+  secret: process.env.JWT_SECRET as string,
+  store: store,
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    maxAge: 30 * 60 * 1000, // 30 minutes
+    httpOnly: true,
+    secure: false,
+    sameSite: 'strict',
+  },
+}));
+
+declare module 'express-session' {
+  interface SessionData {
+    seller?: SellerSessionData;
+  }
+}
+
+app.use(cors({
+  origin: 'http://localhost:5173', // Replace with your frontend URL
+  credentials: true,
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+store.sync();
+
+// Your routes and other configurations...
 
 // Routes for category management
 app.get('/categories', async (req: Request, res: Response) => {
@@ -122,14 +161,14 @@ app.put('/reviews/:id', reviewAndRatingController.updateReviewById);
 app.delete('/reviews/:id', reviewAndRatingController.deleteReviewById);
 app.get('/reviews/:productId/ratingTotals', reviewAndRatingController.getRatingTotalsByProductId);
 app.get('/reviews/count/:productId', reviewAndRatingController.getReviewCountByProductId);
-
+app.post('/verify-bank/:sellerId', uploadMiddleware2, verifyBank);
 
 app.get('/protected-route', authenticateToken, (_req, res) => {
   res.json({ message: "This is a protected route" });
 });
 app.post('/signin', signin);
 app.post('/become-seller', becomeSeller);
-app.post('/send-otp', sendOtp); 
+// app.post('/send-otp', sendOtp); 
 app.post('/signup', signUp);
 //  app.post('/api/verify-bank/:sellerId', uploadMiddleware, verifyBank);
 app.post('/completeSellerRegistration', completeSellerRegistration);
@@ -141,9 +180,6 @@ app.get('/Product', getAllProducts1);
 app.get('/Notification', getAllNotifications);
 // app.get('/products-seller-cities', getProductsAndSellerCities);
 app.get('/CalendarBuyer', getCalendarEvents); 
-
-
-
 
 //search
 app.get('/api/search', async (req, res) => {
@@ -204,11 +240,10 @@ app.get('/api/search', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
 export default app;
- 

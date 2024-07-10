@@ -30,7 +30,7 @@ CREATE TABLE `sellers` (
     `seller_id` INTEGER NOT NULL AUTO_INCREMENT,
     `store_name` VARCHAR(191) NULL,
     `email` VARCHAR(191) NOT NULL,
-    `line1` VARCHAR(191) NOT NULL,
+    `line1` VARCHAR(191) NULL,
     `line2` VARCHAR(191) NULL,
     `district` VARCHAR(191) NULL,
     `contactNo` VARCHAR(191) NULL,
@@ -49,6 +49,7 @@ CREATE TABLE `sellers` (
 CREATE TABLE `SellerBankVerification` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `seller_id` INTEGER NOT NULL,
+    `idNumber` VARCHAR(191) NULL,
     `idFrontPhoto` VARCHAR(191) NULL,
     `idBackPhoto` VARCHAR(191) NULL,
     `bankBookPhoto` VARCHAR(191) NULL,
@@ -211,9 +212,6 @@ CREATE TABLE `city` (
 
 -- AddForeignKey
 ALTER TABLE `buyerAddress` ADD CONSTRAINT `buyerAddress_buyerId_fkey` FOREIGN KEY (`buyerId`) REFERENCES `buyers`(`buyer_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `sellers` ADD CONSTRAINT `sellers_line1_fkey` FOREIGN KEY (`line1`) REFERENCES `city`(`city_name`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `SellerBankVerification` ADD CONSTRAINT `SellerBankVerification_seller_id_fkey` FOREIGN KEY (`seller_id`) REFERENCES `sellers`(`seller_id`) ON DELETE RESTRICT ON UPDATE CASCADE;

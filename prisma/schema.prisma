@@ -7,7 +7,7 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = "mysql://root:M%ckwfrbfd07EhCn7kvEc8d@localhost:3306/agrimarket"
+  url      = "mysql://root:1234@localhost:3306/agrimarket2"
 }
 
 model buyers {

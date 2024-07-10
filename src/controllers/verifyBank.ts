@@ -1,3 +1,5 @@
+
+
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { S3Client } from '@aws-sdk/client-s3';
@@ -24,7 +26,7 @@ const upload = multer({
     bucket: process.env.AWS_BUCKET_NAME || '',
     key: function (_req, file, cb) {
       const ext = path.extname(file.originalname);
-      cb(null, ${Date.now().toString()}${ext});
+      cb(null, `${Date.now().toString()}${ext}`);
     },
   }),
 });
@@ -83,10 +85,10 @@ async function verifyBank(req: Request, res: Response) {
   }
 }
 
-const uploadMiddleware1 = upload.fields([
+const uploadMiddleware2 = upload.fields([
   { name: 'idFrontPhoto', maxCount: 1 },
   { name: 'idBackPhoto', maxCount: 1 },
   { name: 'bankBookPhoto', maxCount: 1 },
 ]);
 
-export { verifyBank, uploadMiddleware1};
+export { verifyBank, uploadMiddleware2 };
