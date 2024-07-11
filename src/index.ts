@@ -318,6 +318,35 @@ app.get('/api/search', async (req, res) => {
 });
 
 
+// GET all notifications with seller information
+app.get('/notifications', async (req: Request, res: Response) => {
+  try {
+    const notifications = await prisma.notifications.findMany({
+      select: {
+        N_id: true,
+        message: true,
+        timestamp: true,
+        categoryId: true,
+        sellerId: true,
+        productId: true,
+        image: true,
+        seller: {
+          select: {
+            store_name: true,
+          },
+        },
+      },
+      orderBy: {
+        timestamp: 'desc',
+      },
+    });
+    res.json(notifications);
+  } catch (error) {
+    console.error('Error fetching notifications:', error);
+    res.status(500).json({ error: 'Could not fetch notifications' });
+  }
+});
+
 const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, () => {
