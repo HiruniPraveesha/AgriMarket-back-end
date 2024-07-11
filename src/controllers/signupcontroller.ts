@@ -27,7 +27,7 @@ async function cleanupIncompleteRegistrations() {
     where: {
       AND: [
         { password: '' },
-        { otpExpireAt: { lte: tenMinAgo } }
+        { otpExpiresAt: { lte: tenMinAgo } }
       ]
     }
   });
@@ -55,18 +55,18 @@ export async function sendOtp(req: Request, res: Response) {
 
     // Generate OTP and set expiration time
     const otp = generateOtp();
-    const otpExpireAt = new Date(Date.now() + 5 * 60 * 1000); // 10 minutes expiration
+    const otpExpiresAt = new Date(Date.now() + 5 * 60 * 1000); // 10 minutes expiration
 
     if (userByEmail || userByContactNo) {
       // User exists but not registered, update OTP
       await prisma.buyers.update({
         where: userByEmail ? { email } : { contactNo },
-        data: { otp, otpExpireAt, contactNo },
+        data: { otp, otpExpiresAt, contactNo },
       });
     } else {
       // User does not exist, create new user with email, OTP, and expiration time
       await prisma.buyers.create({
-        data: { email, otp, otpExpireAt, name: '', address: '', password: '', contactNo },
+        data: { email, otp, otpExpiresAt, name: '', address: '', password: '', contactNo },
       });
     }
     const htmlTemplate = `
@@ -121,8 +121,8 @@ export async function signUp(req: Request, res: Response) {
     // Check if the OTP is valid
     if (
       existingUser.otp !== otp || 
-      !existingUser.otpExpireAt || 
-      new Date() > existingUser.otpExpireAt
+      !existingUser.otpExpiresAt || 
+      new Date() > existingUser.otpExpiresAt
     ) {
       return res.status(400).json({ error: 'Invalid or expired OTP' });
     }
@@ -145,7 +145,7 @@ export async function signUp(req: Request, res: Response) {
         contactNo,
         password: hashedPassword,
         otp: null,
-        otpExpireAt: null
+        otpExpiresAt: null
       },
     });
 

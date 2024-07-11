@@ -23,6 +23,8 @@ import { getAllNotifications } from './controllers/Notification';
 // import { getProductsAndSellerCities } from './controllers/seller-city';
 import { getCalendarEvents } from './controllers/calendarController';
 import { verifyBank, uploadMiddleware2 } from './controllers/verifyBank';
+import { forgotPassword, verifyOTP, resetPassword, resendOTP } from './controllers/forgotPassword';
+import { getSellerNameById } from './controllers/seller';
 
 import {
    getAllCategories,
@@ -77,7 +79,7 @@ declare module 'express-session' {
 }
 
 app.use(cors({
-  origin: 'http://localhost:5173', // Replace with your frontend URL
+  origin: 'http://localhost:5175', // Replace with your frontend URL
   credentials: true,
 }));
 
@@ -162,15 +164,20 @@ app.delete('/reviews/:id', reviewAndRatingController.deleteReviewById);
 app.get('/reviews/:productId/ratingTotals', reviewAndRatingController.getRatingTotalsByProductId);
 app.get('/reviews/count/:productId', reviewAndRatingController.getReviewCountByProductId);
 app.post('/verify-bank/:sellerId', uploadMiddleware2, verifyBank);
+app.get('/sellers/:sellerId', getSellerNameById);
 
 app.get('/protected-route', authenticateToken, (_req, res) => {
   res.json({ message: "This is a protected route" });
 });
 app.post('/signin', signin);
 app.post('/become-seller', becomeSeller);
-// app.post('/send-otp', sendOtp); 
+app.post('/send-otp', sendOtp); 
 app.post('/signup', signUp);
 //  app.post('/api/verify-bank/:sellerId', uploadMiddleware, verifyBank);
+app.post('/api/forgot-password', forgotPassword);
+app.post('/api/verify-otp', verifyOTP);
+app.post("/resend-otp", resendOTP);
+app.post('/api/reset-password', resetPassword);
 app.post('/completeSellerRegistration', completeSellerRegistration);
 app.get('/api/seller/details', getSellerDetails);
 app.get('/api/seller/products', getSellerProducts);

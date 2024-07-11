@@ -41,10 +41,20 @@ export async function signin(req: Request, res: Response) {
 
         // Validate the password
         const passwordMatch = await bcrypt.compare(password, user.password);
+        console.log("Provided password:", password); // Log the provided password for debugging
+    console.log("Stored password hash:", user.password); // Log the stored password hash for debugging
 
-        if (!passwordMatch) {
-            return res.status(401).json({ error: 'Invalid password' });
-        }
+        console.log("Password Match:", passwordMatch); // Add this line to check the password comparison result
+
+if (!passwordMatch) {
+    console.log("Provided password:", password); // Log the provided password for debugging
+    console.log("Stored password hash:", user.password); // Log the stored password hash for debugging
+    return res.status(401).json({ error: 'Invalid password' });
+}
+
+        // if (!passwordMatch) {
+        //     return res.status(401).json({ error: 'Invalid password' });
+        // }
 
         // Generate token
         const userId = buyer ? buyer.buyer_id : seller?.seller_id;
