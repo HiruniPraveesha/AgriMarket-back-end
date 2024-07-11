@@ -87,6 +87,7 @@ model Category {
   category_id Int       @id @default(autoincrement())
   name        String?
   products    Product[]
+  notifications notifications[]  // Add this back relation
 }
 
 model cart {
@@ -146,14 +147,24 @@ model calendarEvents {
 }
 
 model notifications {
-  N_id      Int      @id @default(autoincrement())
-  message   String
-  timestamp DateTime
-  Status    String
-  sellerId  Int
-  productid Int
-  product   Product  @relation(fields: [productid], references: [product_id], map: "notification_about")
-  seller    sellers  @relation(fields: [sellerId], references: [seller_id], map: "notification_from")
+  N_id       Int                  @id @default(autoincrement())
+  message    String
+  timestamp  DateTime
+  categoryId Int
+  sellerId   Int
+  productId  Int
+  image      String?
+  product    Product              @relation(fields: [productId], references: [product_id], map: "notification_about")
+  seller     sellers              @relation(fields: [sellerId], references: [seller_id], map: "notification_from")
+  read       notification_reads[]
+  category   Category             @relation(fields: [categoryId], references: [category_id])
+}
+
+model notification_reads {
+  id             Int           @id @default(autoincrement())
+  notification   notifications @relation(fields: [notificationId], references: [N_id])
+  notificationId Int
+  buyerId        Int
 }
 
 model ReviewAndRating {

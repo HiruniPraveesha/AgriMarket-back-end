@@ -4,7 +4,8 @@ import { Request, Response } from 'express';
 
 import dotenv from 'dotenv';
 import * as reviewAndRatingController from './controllers/reviewsAndRating';
-
+import { getSellerProductsByCategory } from './controllers/productController';
+import { uploadMiddleware2, createNotification } from './controllers/AddNotifications';
 import {
    getAllCategories,
   getCategoryNameById,
@@ -83,6 +84,9 @@ app.get('/sellers/:sellerId', getSellerNameById);
 
 app.post('/signin', signin);
 
+// Route for creating notification
+app.post('/create-notification', uploadMiddleware2, createNotification);
+app.get('/products/:sellerId/:categoryId', getSellerProductsByCategory);
 const PORT = process.env.PORT || 8000;
 
 app.listen(PORT, () => {

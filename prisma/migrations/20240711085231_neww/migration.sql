@@ -155,11 +155,21 @@ CREATE TABLE `notifications` (
     `N_id` INTEGER NOT NULL AUTO_INCREMENT,
     `message` VARCHAR(191) NOT NULL,
     `timestamp` DATETIME(3) NOT NULL,
-    `Status` VARCHAR(191) NOT NULL,
+    `categoryId` INTEGER NOT NULL,
     `sellerId` INTEGER NOT NULL,
-    `productid` INTEGER NOT NULL,
+    `productId` INTEGER NOT NULL,
+    `image` VARCHAR(191) NULL,
 
     PRIMARY KEY (`N_id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `notification_reads` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `notificationId` INTEGER NOT NULL,
+    `buyerId` INTEGER NOT NULL,
+
+    PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -213,10 +223,16 @@ ALTER TABLE `orders` ADD CONSTRAINT `puchased_order` FOREIGN KEY (`sellerId`) RE
 ALTER TABLE `calendarEvents` ADD CONSTRAINT `calendar` FOREIGN KEY (`sellerId`) REFERENCES `sellers`(`seller_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `notifications` ADD CONSTRAINT `notification_about` FOREIGN KEY (`productid`) REFERENCES `Product`(`product_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `notifications` ADD CONSTRAINT `notification_about` FOREIGN KEY (`productId`) REFERENCES `Product`(`product_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `notifications` ADD CONSTRAINT `notification_from` FOREIGN KEY (`sellerId`) REFERENCES `sellers`(`seller_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `notifications` ADD CONSTRAINT `notifications_categoryId_fkey` FOREIGN KEY (`categoryId`) REFERENCES `Category`(`category_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `notification_reads` ADD CONSTRAINT `notification_reads_notificationId_fkey` FOREIGN KEY (`notificationId`) REFERENCES `notifications`(`N_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `ReviewAndRating` ADD CONSTRAINT `ReviewAndRating_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `Product`(`product_id`) ON DELETE CASCADE ON UPDATE CASCADE;
