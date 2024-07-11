@@ -14,6 +14,7 @@ import * as reviewAndRatingController from './controllers/reviewsAndRating';
 import { sendOtp, signUp } from './controllers/signupcontroller';
 import { authenticateToken } from './middlewares/secrets';
 import { becomeSeller } from './controllers/becomeSeller';
+import { getCities } from './controllers/completeSellerRegistration';
 import { completeSellerRegistration } from './controllers/completeSellerRegistration';
 // import { uploadMiddleware1, verifyBank } from './controllers/verifyBank';
 import { getSellerDetails, getSellerProducts } from './controllers/sellerProfile';
@@ -182,6 +183,7 @@ app.post('/api/verify-otp', verifyOTP);
 app.post("/resend-otp", resendOTP);
 app.post('/api/reset-password', resetPassword);
 app.post('/completeSellerRegistration', completeSellerRegistration);
+app.get('/cities', getCities);
 app.get('/api/seller/details', getSellerDetails);
 app.get('/api/seller/products', getSellerProducts);
 

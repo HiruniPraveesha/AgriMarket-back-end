@@ -89,3 +89,13 @@ export async function completeSellerRegistration(req: Request, res: Response) {
         return res.status(500).json({ status: 500, error: 'Internal Server Error' });
     }
 }
+
+export const getCities = async (req: Request, res: Response) => {
+    try {
+      const cities = await prisma.city.findMany();
+      res.status(200).json(cities);
+    } catch (error) {
+      console.error("Error fetching cities:", error);
+      res.status(500).json({ error: "Failed to fetch cities" });
+    }
+  };
