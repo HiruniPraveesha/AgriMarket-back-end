@@ -22,41 +22,42 @@ interface ProductOrder {
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    user: process.env.EMAIL,
+    pass: process.env.EMAIL_PASSWORD,
   },
+  // debug: true, // Remove this line or set to false
+  // logger: true, // Remove this line or set to false
 });
 
-async function sendConfirmationEmail(
-  to: string,
-  subject: string,
-  html: string
-) {
+
+
+async function sendConfirmationEmail(to: string, subject: string, html: string) {
   try {
     const info = await transporter.sendMail({
-      from: process.env.EMAIL_USER,
+      from: "hirunipraveesha18@gmail.com",
       to,
       subject,
       html,
     });
-
     console.log("Message sent: %s", info.messageId);
   } catch (error) {
     console.error("Error sending email:", error);
+    throw new Error("Email sending failed");
   }
 }
 
-export async function GetDeliveryDetails(req: Request, res: Response) {
-  const { id } = req.query;
 
-  if (!id) {
+export async function GetDeliveryDetails(req: Request, res: Response) {
+  const { buyerId } = req.query;
+
+  if (!buyerId) {
     return res.status(400).json({ error: "Invalid or missing user ID" });
   }
 
   try {
     const user = await prisma.buyers.findUnique({
       where: {
-        buyer_id: Number(id),
+        buyer_id: Number(buyerId),
       },
       select: {
         contactNo: true,
@@ -207,6 +208,8 @@ export async function placeOrder(req: Request, res: Response) {
       where: { buyer_id: Number(buyerId) },
       select: { email: true },
     });
+    
+    console.log(process.env)
 
     if (buyer && buyer.email) {
       const orderItemsHtml = orderProductsData
@@ -277,20 +280,19 @@ export async function placeOrder(req: Request, res: Response) {
         </html>
       `;
 
-      await sendConfirmationEmail(
-        buyer.email,
-        "Order Confirmation",
-        htmlContent
-      );
+      try {
+        console.log(buyer.email);
+        await sendConfirmationEmail(buyer.email, "Order Confirmation", htmlContent);
+      } catch (error) {
+        console.error("Failed to send order confirmation email:", error);
+      }
     }
 
-    return res
-      .status(200)
-      .json({
-        message: "Order placed successfully",
-        data: order,
-        walletBalance: wallet.pointBalance,
-      });
+    return res.status(200).json({
+      message: "Order placed successfully",
+      data: order,
+      walletBalance: wallet.pointBalance,
+    });
   } catch (error) {
     console.error("Error placing order:", error);
     return res.status(500).json({ error: "Failed to place order" });

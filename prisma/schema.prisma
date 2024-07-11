@@ -71,12 +71,6 @@ model SellerBankVerification {
   accountNumber String? // Bank account number
 }
 
-model verification_codes {
-  id    Int    @id @default(autoincrement())
-  email String
-  code  String
-}
-
 model Product {
   product_id     Int               @id @default(autoincrement())
   name           String

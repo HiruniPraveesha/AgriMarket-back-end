@@ -4,16 +4,16 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export async function GetBuyerDetails(req: Request, res: Response) {
-  const { id } = req.query;
+  const { buyerId } = req.query;
 
-  if (!id) {
+  if (!buyerId) {
     return res.status(400).json({ error: "Invalid or missing user ID" });
   }
 
   try {
     const user = await prisma.buyers.findUnique({
       where: {
-        buyer_id: Number(id),
+        buyer_id: Number(buyerId),
       },
       select: {
         name: true,
