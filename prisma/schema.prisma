@@ -1,17 +1,14 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "mysql"
-  url      = "mysql://root:1234@localhost:3306/agrimarket"
+  url      = "mysql://root:Pawan34741@@localhost:3306/AgriMarket"
 }
 
 model buyers {
-  buyer_id    Int               @unique @default(autoincrement())
+  buyer_id    Int               @id @default(autoincrement())
   name        String
   email       String            @unique
   address     String
@@ -23,10 +20,11 @@ model buyers {
   wallet      wallet[]
   addresses   buyerAddress[]
   reviews     ReviewAndRating[]
+  orders      Orders[]
 }
 
 model buyerAddress {
-  user       buyers @relation(fields: [buyerId], references: [buyer_id])
+  user       buyers @relation(fields: [buyerId], references: [buyer_id], map: "buyerAddress_buyer")
   buyerId    Int
   line1      String
   line2      String
@@ -37,7 +35,7 @@ model buyerAddress {
 }
 
 model sellers {
-  seller_id     Int              @unique @default(autoincrement())
+  seller_id     Int              @id @default(autoincrement())
   store_name    String?
   email         String           @unique
   line1         String?
@@ -49,7 +47,7 @@ model sellers {
   OTP           String?
   emailVerified Boolean?
   products      Product[]
-  orders        orders[]
+  // orders        Orders[]         
   notifications notifications[]
   calendar      calendarEvents[]
 }
@@ -74,19 +72,20 @@ model Product {
   notifications notifications[]
   cart          cartProduct[]
   reviews       ReviewAndRating[]
-  quantity      Int // Added field
-  quantityLimit Int // Added field
-  images        ProductImage[] // New relation field
+  quantity      Int
+  quantityLimit Int
+  images        ProductImage[]    // New relation field
+  //orders        Orders[]         
+  orderProducts OrderProduct[]    // Added relation field
 }
 
 model ProductImage {
   id        Int     @id @default(autoincrement())
   image     Bytes
   productId Int
-  product   Product @relation(fields: [productId], references: [product_id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [product_id], onDelete: Cascade, map: "ProductImage_product")
 }
 
-// Define the Category model
 model Category {
   category_id Int       @id @default(autoincrement())
   name        String?
@@ -95,26 +94,24 @@ model Category {
 
 model cart {
   buyerId     Int           @id
-  buyer       buyers        @relation(fields: [buyerId], references: [buyer_id])
+  buyer       buyers        @relation(fields: [buyerId], references: [buyer_id], map: "cart_buyer")
   cartProduct cartProduct[]
 }
 
 model cartProduct {
   buyerId   Int
-  buyer     cart    @relation(fields: [buyerId], references: [buyerId])
+  buyer     cart    @relation(fields: [buyerId], references: [buyerId], map: "cartProduct_cart")
   productId Int
-  product   Product @relation(fields: [productId], references: [product_id])
+  product   Product @relation(fields: [productId], references: [product_id], map: "cartProduct_product")
   qty       Int
 
   @@id([buyerId, productId])
 }
 
 model wallet {
-  wallet_id    Int    @id @unique @default(autoincrement())
-  buyer        buyers @relation(fields: [buyerId], references: [buyer_id])
-  buyerId      Int
-  walletBal    Float
-  ReachargeAmt Float
+  buyer        buyers @relation(fields: [buyerId], references: [buyer_id], map: "wallet_buyer")
+  buyerId      Int @id
+  pointBalance Float
 }
 
 model admin {
@@ -124,11 +121,27 @@ model admin {
   password String
 }
 
-model orders {
-  order_id Int     @id @default(autoincrement())
-  sellerId Int
-  buyerId  Int
-  seller   sellers @relation(fields: [sellerId], references: [seller_id], map: "puchased_order")
+model Orders {
+  id              Int            @id @default(autoincrement())
+  buyerId         Int
+  buyer           buyers         @relation(fields: [buyerId], references: [buyer_id], map: "Orders_buyer")
+  totalAmount     Float
+  rewardPoints    Float
+  usedrewardPoints  Float?
+  deliveryInstructions  String?   
+  deliveryAddress String?
+  createdAt       DateTime       @default(now())
+  orderProducts   OrderProduct[]
+}
+
+model OrderProduct {
+  id        Int      @id @default(autoincrement())
+  orderId   Int
+  order     Orders   @relation(fields: [orderId], references: [id], map: "OrderProduct_order")
+  productId Int
+  product   Product  @relation(fields: [productId], references: [product_id], map: "OrderProduct_product")
+  quantity  Int
+  amount    Float
 }
 
 model Payment {
@@ -146,7 +159,7 @@ model calendarEvents {
   note        String
   start       DateTime
   sellerId    Int
-  seller      sellers  @relation(fields: [sellerId], references: [seller_id], map: "calendar")
+  seller      sellers  @relation(fields: [sellerId], references: [seller_id], map: "calendarEvents_seller")
 }
 
 model notifications {
@@ -156,8 +169,8 @@ model notifications {
   Status    String
   sellerId  Int
   productid Int
-  product   Product  @relation(fields: [productid], references: [product_id], map: "notification_about")
-  seller    sellers  @relation(fields: [sellerId], references: [seller_id], map: "notification_from")
+  product   Product  @relation(fields: [productid], references: [product_id], map: "notifications_product")
+  seller    sellers  @relation(fields: [sellerId], references: [seller_id], map: "notifications_seller")
 }
 
 model ReviewAndRating {
@@ -165,9 +178,9 @@ model ReviewAndRating {
   rating    Int
   comment   String
   productId Int
-  product   Product  @relation(fields: [productId], references: [product_id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [product_id], onDelete: Cascade, map: "ReviewAndRating_product")
   buyerId   Int
-  buyer     buyers   @relation(fields: [buyerId], references: [buyer_id], onDelete: Cascade)
+  buyer     buyers   @relation(fields: [buyerId], references: [buyer_id], onDelete: Cascade, map: "ReviewAndRating_buyer")
   createdAt DateTime @default(now())
 }
 
