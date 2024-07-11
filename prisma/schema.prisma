@@ -23,6 +23,7 @@ model buyers {
   wallet      wallet[]
   addresses   buyerAddress[]
   reviews     ReviewAndRating[]
+  orders      orders[]
 }
 
 model buyerAddress {
@@ -77,6 +78,7 @@ model Product {
   quantity      Int // Added field
   quantityLimit Int // Added field
   images        ProductImage[] // New relation field
+  orders        orders[]
 }
 
 model ProductImage {
@@ -125,10 +127,15 @@ model admin {
 }
 
 model orders {
-  order_id Int     @id @default(autoincrement())
-  sellerId Int
-  buyerId  Int
-  seller   sellers @relation(fields: [sellerId], references: [seller_id], map: "puchased_order")
+  order_id  Int      @id @default(autoincrement())
+  sellerId  Int
+  buyerId   Int
+  seller    sellers  @relation(fields: [sellerId], references: [seller_id], map: "puchased_order")
+  buyer     buyers   @relation(fields: [buyerId], references: [buyer_id])
+  productId Int
+  product   Product  @relation(fields: [productId], references: [product_id])
+  createdAt DateTime @default(now())
+  Amount    Float
 }
 
 model Payment {
