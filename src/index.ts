@@ -241,7 +241,7 @@ app.post('/create-notification', uploadMiddleware3, createNotification);
 app.get('/products/:sellerId/:categoryId', getSellerProductsByCategory);
 
 
-//search
+// search
 app.get('/api/search', async (req, res) => {
   const { keyword, category } = req.query;
 
@@ -270,6 +270,10 @@ app.get('/api/search', async (req, res) => {
             },
           ],
         },
+        include: {
+          category: true,
+          seller: true,
+        },
       });
     } else if (keywordString) {
       results = await prisma.product.findMany({
@@ -277,6 +281,10 @@ app.get('/api/search', async (req, res) => {
           name: {
             contains: keywordString,
           },
+        },
+        include: {
+          category: true,
+          seller: true,
         },
       });
     } else if (categoryString) {
@@ -288,9 +296,18 @@ app.get('/api/search', async (req, res) => {
             },
           },
         },
+        include: {
+          category: true,
+          seller: true,
+        },
       });
     } else {
-      results = await prisma.product.findMany();
+      results = await prisma.product.findMany({
+        include: {
+          category: true,
+          seller: true,
+        },
+      });
     }
 
     res.json(results);
@@ -299,6 +316,7 @@ app.get('/api/search', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 const PORT = process.env.PORT || 8080;
 
