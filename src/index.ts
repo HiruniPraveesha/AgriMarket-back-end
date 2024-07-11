@@ -23,7 +23,8 @@ import { getAllNotifications } from './controllers/Notification';
 // import { getProductsAndSellerCities } from './controllers/seller-city';
 import { getCalendarEvents } from './controllers/calendarController';
 import { verifyBank, uploadMiddleware2 } from './controllers/verifyBank';
-
+import { forgotPassword, verifyOTP, resetPassword, resendOTP } from './controllers/forgotPW';
+import { getSellerNameById } from './controllers/seller';
 import {
    getAllCategories,
   createCategory,
@@ -88,6 +89,12 @@ store.sync();
 // Your routes and other configurations...
 
 // Routes for category management
+
+app.post('/api/forgot-password', forgotPassword);
+app.post('/api/verify-otp', verifyOTP);
+app.post("/resend-otp", resendOTP);
+app.post('/api/reset-password', resetPassword);
+
 app.get('/categories', async (req: Request, res: Response) => {
   try {
     const categories = await getAllCategories();
@@ -174,6 +181,8 @@ app.post('/signup', signUp);
 app.post('/completeSellerRegistration', completeSellerRegistration);
 app.get('/api/seller/details', getSellerDetails);
 app.get('/api/seller/products', getSellerProducts);
+
+app.get('/sellers/:sellerId', getSellerNameById);
 
 app.get('/Category', getAllCategories1);
 app.get('/Product', getAllProducts1);
