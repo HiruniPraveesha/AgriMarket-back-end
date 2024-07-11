@@ -20,11 +20,14 @@ import { getSellerDetails, getSellerProducts } from './controllers/sellerProfile
 import { getAllCategories1 } from './controllers/categoryController';
 import { getAllProducts1 } from './controllers/productController';
 import { getAllNotifications } from './controllers/Notification';
-// import { getProductsAndSellerCities } from './controllers/seller-city';
-import { getCalendarEvents } from './controllers/calendarController';
+import { getProductsAndSellerCities } from './controllers/seller-city';
+
 import { verifyBank, uploadMiddleware2 } from './controllers/verifyBank';
 import { forgotPassword, verifyOTP, resetPassword, resendOTP } from './controllers/forgotPassword';
 import { getSellerNameById } from './controllers/seller';
+import { getCalendarEvents,getSellers,getCategories } from './controllers/calBuyer';
+
+import {createCalendarEvent,updateCalendarEvent , deleteCalendarEvent,getCalendarEventsBySeller,getEventById}from './controllers/calSeller'
 
 import {
    getAllCategories,
@@ -183,10 +186,18 @@ app.get('/api/seller/details', getSellerDetails);
 app.get('/api/seller/products', getSellerProducts);
 
 app.get('/Category', getAllCategories1);
-app.get('/Product', getAllProducts1);
-app.get('/Notification', getAllNotifications);
-// app.get('/products-seller-cities', getProductsAndSellerCities);
+app.get('/productsCal/seller/:sellerId', getProductsBySellerId);
+// app.get('/Notification', getAllNotifications);
+app.post('/calendar/create', createCalendarEvent)
+app.put('/calendar/update/:event_id', updateCalendarEvent)
+app.delete('/calendar/delete/:event_id', deleteCalendarEvent)
+app.get('/calendar/:sellerId',getCalendarEventsBySeller)
+app.get('/calendar/event/:event_id',getEventById)
+app.get('/products-seller-cities', getProductsAndSellerCities);
 app.get('/CalendarBuyer', getCalendarEvents); 
+app.get('/getCategories', getCategories);
+app.get('/getSellers', getSellers);
+// app.post('/addNotifications',createNotification)
 
 //search
 app.get('/api/search', async (req, res) => {

@@ -19,10 +19,10 @@ model buyers {
   password     String
   otp          String?
   otpExpiresAt DateTime?
-  cart         cart[]
   wallet       wallet[]
   addresses    buyerAddress[]
   reviews      ReviewAndRating[]
+  orders       Orders[]
 }
 
 model buyerAddress {
@@ -40,7 +40,7 @@ model sellers {
   seller_id              Int                     @unique @default(autoincrement())
   store_name             String?
   email                  String                  @unique
-  line1                  String?
+  line1                  String
   line2                  String?
   district               String?
   contactNo              String?                 @unique
@@ -49,9 +49,8 @@ model sellers {
   otpExpiresAt           DateTime?
   emailVerified          Boolean
   profilePic             String?
-  // sellerCity             city                    @relation(fields: [line1], references: [city_name])
+  sellerCity             city                    @relation(fields: [line1], references: [city_name])
   products               Product[]
-  orders                 orders[]
   notifications          notifications[]
   calendar               calendarEvents[]
   sellerBankVerification SellerBankVerification?
@@ -78,56 +77,40 @@ model verification_codes {
 }
 
 model Product {
-  product_id    Int               @id @default(autoincrement())
-  name          String
-  price         Float
-  description   String
-  image1        String
-  image2        String
-  image3        String
-  image4        String
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
-  categoryId    Int
-  category      Category          @relation(fields: [categoryId], references: [category_id], map: "product_category")
-  sellerId      Int
-  seller        sellers           @relation(fields: [sellerId], references: [seller_id], map: "product_seller")
-  quantity      Int // Added field
-  quantityLimit Int // Added field
-  notifications notifications[]
-  cart          cartProduct[]
-  reviews       ReviewAndRating[]
+  product_id     Int               @id @default(autoincrement())
+  name           String
+  price          Float
+  description    String
+  image1         String
+  image2         String
+  image3         String
+  image4         String
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  categoryId     Int
+  category       Category          @relation(fields: [categoryId], references: [category_id], map: "product_category")
+  sellerId       Int
+  seller         sellers           @relation(fields: [sellerId], references: [seller_id], map: "product_seller")
+  quantity       Int // Added field
+  quantityLimit  Int // Added field
+  notifications  notifications[]
+  reviews        ReviewAndRating[]
+  calendarEvents calendarEvents[]
+  orderProducts  OrderProduct[]
 }
 
 // Define the Category model
 model Category {
-  category_id Int       @id @default(autoincrement())
-  name        String?
-  products    Product[]
-}
-
-model cart {
-  buyerId     Int           @id
-  buyer       buyers        @relation(fields: [buyerId], references: [buyer_id])
-  cartProduct cartProduct[]
-}
-
-model cartProduct {
-  buyerId   Int
-  buyer     cart    @relation(fields: [buyerId], references: [buyerId])
-  productId Int
-  product   Product @relation(fields: [productId], references: [product_id])
-  qty       Int
-
-  @@id([buyerId, productId])
+  category_id    Int              @id @default(autoincrement())
+  name           String?
+  products       Product[]
+  calendarEvents calendarEvents[]
 }
 
 model wallet {
-  wallet_id    Int    @id @unique @default(autoincrement())
-  buyer        buyers @relation(fields: [buyerId], references: [buyer_id])
-  buyerId      Int
-  walletBal    Float
-  ReachargeAmt Float
+  buyer        buyers @relation(fields: [buyerId], references: [buyer_id], map: "wallet_buyer")
+  buyerId      Int    @id
+  pointBalance Float
 }
 
 model admin {
@@ -137,11 +120,27 @@ model admin {
   password String
 }
 
-model orders {
-  order_id Int     @id @default(autoincrement())
-  sellerId Int
-  buyerId  Int
-  seller   sellers @relation(fields: [sellerId], references: [seller_id], map: "puchased_order")
+model Orders {
+  id                   Int            @id @default(autoincrement())
+  buyerId              Int
+  buyer                buyers         @relation(fields: [buyerId], references: [buyer_id], map: "Orders_buyer")
+  totalAmount          Float
+  rewardPoints         Float
+  usedrewardPoints     Float?
+  deliveryInstructions String?
+  deliveryAddress      String?
+  createdAt            DateTime       @default(now())
+  orderProducts        OrderProduct[]
+}
+
+model OrderProduct {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  order     Orders  @relation(fields: [orderId], references: [id], map: "OrderProduct_order")
+  productId Int
+  product   Product @relation(fields: [productId], references: [product_id], map: "OrderProduct_product")
+  quantity  Int
+  amount    Float
 }
 
 model Payment {
@@ -155,11 +154,13 @@ model calendarEvents {
   event_id    Int      @id @default(autoincrement())
   categoryId  Int
   productId   Int
-  productName String
   note        String
   start       DateTime
   sellerId    Int
   seller      sellers  @relation(fields: [sellerId], references: [seller_id], map: "calendar")
+  product     Product  @relation(fields: [productId], references: [product_id])
+  category    Category @relation(fields: [categoryId], references: [category_id])
+  cartBuyerId Int?
 }
 
 model notifications {
@@ -193,8 +194,8 @@ model CarouselItem {
 }
 
 model city {
-  city_name String @id
-  lat       Float
-  lng       Float
-  // sellerCity sellers[]
+  city_name  String    @id
+  lat        Float
+  lng        Float
+  sellerCity sellers[]
 }
