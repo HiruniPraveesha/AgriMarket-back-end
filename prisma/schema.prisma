@@ -17,6 +17,7 @@ model buyers {
   address      String
   contactNo    String            @unique
   password     String
+  profilePhoto String?
   otp          String?
   otpExpiresAt DateTime?
   wallet       wallet[]
@@ -105,6 +106,7 @@ model Category {
   name           String?
   products       Product[]
   calendarEvents calendarEvents[]
+  notifications  notifications[]
 }
 
 model wallet {
@@ -164,14 +166,24 @@ model calendarEvents {
 }
 
 model notifications {
-  N_id      Int      @id @default(autoincrement())
-  message   String
-  timestamp DateTime
-  Status    String
-  sellerId  Int
-  productid Int
-  product   Product  @relation(fields: [productid], references: [product_id], map: "notification_about")
-  seller    sellers  @relation(fields: [sellerId], references: [seller_id], map: "notification_from")
+  N_id       Int                  @id @default(autoincrement())
+  message    String
+  timestamp  DateTime
+  categoryId Int
+  sellerId   Int
+  productId  Int
+  image      String?
+  product    Product              @relation(fields: [productId], references: [product_id], map: "notification_about")
+  seller     sellers              @relation(fields: [sellerId], references: [seller_id], map: "notification_from")
+  read       notification_reads[]
+  Category   Category             @relation(fields: [categoryId], references: [category_id])
+}
+
+model notification_reads {
+  id             Int           @id @default(autoincrement())
+  notification   notifications @relation(fields: [notificationId], references: [N_id])
+  notificationId Int
+  buyerId        Int
 }
 
 model ReviewAndRating {
@@ -194,8 +206,8 @@ model CarouselItem {
 }
 
 model city {
-  city_name  String    @id
-  lat        Float
-  lng        Float
-  sellerCity sellers[]
+  city_name String    @id
+  lat       Float
+  lng       Float
+  sellers   sellers[]
 }

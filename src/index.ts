@@ -18,7 +18,7 @@ import { completeSellerRegistration } from './controllers/completeSellerRegistra
 // import { uploadMiddleware1, verifyBank } from './controllers/verifyBank';
 import { getSellerDetails, getSellerProducts } from './controllers/sellerProfile';
 import { getAllCategories1 } from './controllers/categoryController';
-import { getAllProducts1 } from './controllers/productController';
+
 import { getAllNotifications } from './controllers/Notification';
 import { getProductsAndSellerCities } from './controllers/seller-city';
 
@@ -26,7 +26,7 @@ import { verifyBank, uploadMiddleware2 } from './controllers/verifyBank';
 import { forgotPassword, verifyOTP, resetPassword, resendOTP } from './controllers/forgotPassword';
 import { getSellerNameById } from './controllers/seller';
 import { getCalendarEvents,getSellers,getCategories } from './controllers/calBuyer';
-
+import { getCities } from './controllers/completeSellerRegistration';
 import {createCalendarEvent,updateCalendarEvent , deleteCalendarEvent,getCalendarEventsBySeller,getEventById}from './controllers/calSeller'
 
 import {
@@ -49,10 +49,22 @@ import {
   uploadMiddleware
 } from './controllers/product';
 
+
+import { uploadProfilePhoto,
+  updateProfilePhoto,
+  updateEmail,
+  updateContactNumber,
+  updateCity,
+  updateAddress,
+  changePassword,
+  getBuyerDetails,
+  getBuyerAddress,} from './controllers/buyerProfile';
+
 import { GetDeliveryDetails, GetSellerAddress, placeOrder } from './controllers/checkout';
 import { getPastOrders } from './controllers/order-history';
 import { CreateWallet, GetBuyerDetails, getRewardHistory, GetWalletBalance, usedRewardPointsHistory } from './controllers/wallet';
-
+import { getSellerProductsByCategory } from './controllers/productController';
+import { uploadMiddleware3, createNotification } from './controllers/AddNotification';
 dotenv.config();
 
 const prisma = new PrismaClient();
@@ -84,7 +96,7 @@ declare module 'express-session' {
 }
 
 app.use(cors({
-  origin: 'http://localhost:5175', // Replace with your frontend URL
+  origin: 'http://localhost:5176', // Replace with your frontend URL
   credentials: true,
 }));
 
@@ -184,8 +196,18 @@ app.post('/api/verify-otp', verifyOTP);
 app.post("/resend-otp", resendOTP);
 app.post('/api/reset-password', resetPassword);
 app.post('/completeSellerRegistration', completeSellerRegistration);
+app.get('/cities', getCities);
 app.get('/api/seller/details', getSellerDetails);
 app.get('/api/seller/products', getSellerProducts);
+
+app.put('/buyer/profile/photo/:buyerId', uploadProfilePhoto, updateProfilePhoto);
+app.put('/buyer/email/:buyerId', updateEmail);
+app.put('/buyer/contact/:buyerId', updateContactNumber);
+app.put('/buyer/city/:buyerId', updateCity);
+app.put('/buyer/address/:buyerId', updateAddress);
+app.put('/buyer/password/:buyerId', changePassword);
+app.get('/buyer/:buyerId', getBuyerDetails);
+app.get('/buyer/address/:buyerId', getBuyerAddress);
 
 app.get('/Category', getAllCategories1);
 app.get('/productsCal/seller/:sellerId', getProductsBySellerId);
@@ -212,6 +234,11 @@ app.post('/createWallet', CreateWallet);
 app.get('/get-wallet-balance', GetWalletBalance);
 app.get('/reward-history', getRewardHistory),
 app.get('/used-reward-points', usedRewardPointsHistory)
+
+
+// Route for creating notification
+app.post('/create-notification', uploadMiddleware3, createNotification);
+app.get('/products/:sellerId/:categoryId', getSellerProductsByCategory);
 
 
 //search

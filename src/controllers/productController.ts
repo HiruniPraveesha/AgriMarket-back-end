@@ -3,18 +3,20 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export const getAllProducts1 = async (req: Request, res: Response) => {
+export const getSellerProductsByCategory = async (req: Request, res: Response) => {
+  const { sellerId, categoryId } = req.params;
+
   try {
     const products = await prisma.product.findMany({
-      select: {
-        product_id: true,  
-        name: true,
-        sellerId : true
+      where: {
+        sellerId: parseInt(sellerId),
+        categoryId: parseInt(categoryId),
       },
     });
-    return res.status(200).json(products);
-  } catch (error: any) {
-    console.error('Error fetching products:', error);
-    res.status(500).json({ error: 'Internal Server Error' });
+
+    res.status(200).json(products);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'An error occurred while fetching products.' });
   }
 };

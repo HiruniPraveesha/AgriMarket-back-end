@@ -16,16 +16,21 @@ export const getProductsAndSellerCities = async (req: Request, res: Response) =>
       },
     });
 
+    if (!products) {
+      console.error('No products found');
+      return res.status(404).json({ error: 'No products found' });
+    }
+
     const data = products.map(product => ({
       product_id: product.product_id,
       product_name: product.name,
-      seller_id: product.seller.seller_id,
-      store_name: product.seller.store_name,
-      city_name: product.seller.sellerCity.city_name,
-      lat: product.seller.sellerCity.lat,
-      lng: product.seller.sellerCity.lng,
+      seller_id: product.seller?.seller_id,
+      store_name: product.seller?.store_name,
+      city_name: product.seller?.sellerCity?.city_name,
+      lat: product.seller?.sellerCity?.lat,
+      lng: product.seller?.sellerCity?.lng,
       category_id: product.categoryId,
-      category_name: product.category.name, 
+      category_name: product.category?.name, 
     }));
 
     return res.status(200).json(data);
