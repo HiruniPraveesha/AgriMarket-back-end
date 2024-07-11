@@ -6,8 +6,9 @@ CREATE TABLE `buyers` (
     `address` VARCHAR(191) NOT NULL,
     `contactNo` VARCHAR(191) NOT NULL,
     `password` VARCHAR(191) NOT NULL,
+    `profilePhoto` VARCHAR(191) NULL,
     `otp` VARCHAR(191) NULL,
-    `otpExpireAt` DATETIME(3) NULL,
+    `otpExpiresAt` DATETIME(3) NULL,
 
     UNIQUE INDEX `buyers_buyer_id_key`(`buyer_id`),
     UNIQUE INDEX `buyers_email_key`(`email`),
@@ -30,7 +31,7 @@ CREATE TABLE `sellers` (
     `seller_id` INTEGER NOT NULL AUTO_INCREMENT,
     `store_name` VARCHAR(191) NULL,
     `email` VARCHAR(191) NOT NULL,
-    `line1` VARCHAR(191) NULL,
+    `line1` VARCHAR(191) NOT NULL,
     `line2` VARCHAR(191) NULL,
     `district` VARCHAR(191) NULL,
     `contactNo` VARCHAR(191) NULL,
@@ -101,30 +102,11 @@ CREATE TABLE `Category` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `cart` (
+CREATE TABLE `wallet` (
     `buyerId` INTEGER NOT NULL,
+    `pointBalance` DOUBLE NOT NULL,
 
     PRIMARY KEY (`buyerId`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `cartProduct` (
-    `buyerId` INTEGER NOT NULL,
-    `productId` INTEGER NOT NULL,
-    `qty` INTEGER NOT NULL,
-
-    PRIMARY KEY (`buyerId`, `productId`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `wallet` (
-    `wallet_id` INTEGER NOT NULL AUTO_INCREMENT,
-    `buyerId` INTEGER NOT NULL,
-    `walletBal` DOUBLE NOT NULL,
-    `ReachargeAmt` DOUBLE NOT NULL,
-
-    UNIQUE INDEX `wallet_wallet_id_key`(`wallet_id`),
-    PRIMARY KEY (`wallet_id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -138,12 +120,28 @@ CREATE TABLE `admin` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `orders` (
-    `order_id` INTEGER NOT NULL AUTO_INCREMENT,
-    `sellerId` INTEGER NOT NULL,
+CREATE TABLE `Orders` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
     `buyerId` INTEGER NOT NULL,
+    `totalAmount` DOUBLE NOT NULL,
+    `rewardPoints` DOUBLE NOT NULL,
+    `usedrewardPoints` DOUBLE NULL,
+    `deliveryInstructions` VARCHAR(191) NULL,
+    `deliveryAddress` VARCHAR(191) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
-    PRIMARY KEY (`order_id`)
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `OrderProduct` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `orderId` INTEGER NOT NULL,
+    `productId` INTEGER NOT NULL,
+    `quantity` INTEGER NOT NULL,
+    `amount` DOUBLE NOT NULL,
+
+    PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -161,10 +159,10 @@ CREATE TABLE `calendarEvents` (
     `event_id` INTEGER NOT NULL AUTO_INCREMENT,
     `categoryId` INTEGER NOT NULL,
     `productId` INTEGER NOT NULL,
-    `productName` VARCHAR(191) NOT NULL,
     `note` VARCHAR(191) NOT NULL,
     `start` DATETIME(3) NOT NULL,
     `sellerId` INTEGER NOT NULL,
+    `cartBuyerId` INTEGER NULL,
 
     PRIMARY KEY (`event_id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -174,11 +172,21 @@ CREATE TABLE `notifications` (
     `N_id` INTEGER NOT NULL AUTO_INCREMENT,
     `message` VARCHAR(191) NOT NULL,
     `timestamp` DATETIME(3) NOT NULL,
-    `Status` VARCHAR(191) NOT NULL,
+    `categoryId` INTEGER NOT NULL,
     `sellerId` INTEGER NOT NULL,
-    `productid` INTEGER NOT NULL,
+    `productId` INTEGER NOT NULL,
+    `image` VARCHAR(191) NULL,
 
     PRIMARY KEY (`N_id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `notification_reads` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `notificationId` INTEGER NOT NULL,
+    `buyerId` INTEGER NOT NULL,
+
+    PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -217,6 +225,9 @@ CREATE TABLE `city` (
 ALTER TABLE `buyerAddress` ADD CONSTRAINT `buyerAddress_buyerId_fkey` FOREIGN KEY (`buyerId`) REFERENCES `buyers`(`buyer_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `sellers` ADD CONSTRAINT `sellers_line1_fkey` FOREIGN KEY (`line1`) REFERENCES `city`(`city_name`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `SellerBankVerification` ADD CONSTRAINT `SellerBankVerification_seller_id_fkey` FOREIGN KEY (`seller_id`) REFERENCES `sellers`(`seller_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -226,28 +237,37 @@ ALTER TABLE `Product` ADD CONSTRAINT `product_category` FOREIGN KEY (`categoryId
 ALTER TABLE `Product` ADD CONSTRAINT `product_seller` FOREIGN KEY (`sellerId`) REFERENCES `sellers`(`seller_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `cart` ADD CONSTRAINT `cart_buyerId_fkey` FOREIGN KEY (`buyerId`) REFERENCES `buyers`(`buyer_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `wallet` ADD CONSTRAINT `wallet_buyer` FOREIGN KEY (`buyerId`) REFERENCES `buyers`(`buyer_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `cartProduct` ADD CONSTRAINT `cartProduct_buyerId_fkey` FOREIGN KEY (`buyerId`) REFERENCES `cart`(`buyerId`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Orders` ADD CONSTRAINT `Orders_buyer` FOREIGN KEY (`buyerId`) REFERENCES `buyers`(`buyer_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `cartProduct` ADD CONSTRAINT `cartProduct_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `Product`(`product_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `OrderProduct` ADD CONSTRAINT `OrderProduct_order` FOREIGN KEY (`orderId`) REFERENCES `Orders`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `wallet` ADD CONSTRAINT `wallet_buyerId_fkey` FOREIGN KEY (`buyerId`) REFERENCES `buyers`(`buyer_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE `orders` ADD CONSTRAINT `puchased_order` FOREIGN KEY (`sellerId`) REFERENCES `sellers`(`seller_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `OrderProduct` ADD CONSTRAINT `OrderProduct_product` FOREIGN KEY (`productId`) REFERENCES `Product`(`product_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `calendarEvents` ADD CONSTRAINT `calendar` FOREIGN KEY (`sellerId`) REFERENCES `sellers`(`seller_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `notifications` ADD CONSTRAINT `notification_about` FOREIGN KEY (`productid`) REFERENCES `Product`(`product_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `calendarEvents` ADD CONSTRAINT `calendarEvents_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `Product`(`product_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `calendarEvents` ADD CONSTRAINT `calendarEvents_categoryId_fkey` FOREIGN KEY (`categoryId`) REFERENCES `Category`(`category_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `notifications` ADD CONSTRAINT `notification_about` FOREIGN KEY (`productId`) REFERENCES `Product`(`product_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `notifications` ADD CONSTRAINT `notification_from` FOREIGN KEY (`sellerId`) REFERENCES `sellers`(`seller_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `notifications` ADD CONSTRAINT `notifications_categoryId_fkey` FOREIGN KEY (`categoryId`) REFERENCES `Category`(`category_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `notification_reads` ADD CONSTRAINT `notification_reads_notificationId_fkey` FOREIGN KEY (`notificationId`) REFERENCES `notifications`(`N_id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `ReviewAndRating` ADD CONSTRAINT `ReviewAndRating_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `Product`(`product_id`) ON DELETE CASCADE ON UPDATE CASCADE;

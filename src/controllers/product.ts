@@ -292,17 +292,123 @@ export const getMoreProducts = async (req: Request, res: Response) => {
     }
   };
   
+  // export const deleteProduct = async (req: Request, res: Response, next: NextFunction) => {
+  //   const { id } = req.params;
+  
+  //   try {
+  //     await prisma.product.delete({
+  //       where: { product_id: parseInt(id) }
+  //     });
+  
+  //     res.status(200).json({ success: true, msg: "Product deleted successfully" });
+  //   } catch (error) {
+  //     console.error('Error deleting product:', error);
+  //     next(new Error('Internal Server Error'));
+  //   }
+  // };
   export const deleteProduct = async (req: Request, res: Response, next: NextFunction) => {
     const { id } = req.params;
   
     try {
-      await prisma.product.delete({
-        where: { product_id: parseInt(id) }
+      const productId = parseInt(id);
+  
+      // Delete related records
+      await prisma.notifications.deleteMany({
+        where: { productId },
       });
   
-      res.status(200).json({ success: true, msg: "Product deleted successfully" });
+      await prisma.orderProduct.deleteMany({
+        where: { productId },
+      });
+  
+      await prisma.reviewAndRating.deleteMany({
+        where: { productId },
+      });
+  
+      // Assuming there's a `productImage` model to be deleted
+
+      // Delete the product
+      await prisma.product.delete({
+        where: { product_id: productId },
+      });
+  
+      res.status(200).json({ success: true, msg: 'Product deleted successfully' });
     } catch (error) {
       console.error('Error deleting product:', error);
       next(new Error('Internal Server Error'));
+    }
+  };
+  
+  export const getProductsCount = async (req: Request, res: Response) => {
+    try {
+      const productsCount = await prisma.product.count();
+      res.json({ count: productsCount });
+    } catch (error) {
+      console.error('Error fetching products count:', error);
+      res.status(500).json({ error: 'Failed to fetch count' });
+    }
+  };
+  
+  export const getProductCountBySellerId = async (req: Request, res: Response) => {
+    const { sellerId } = req.params;
+  
+    if (!sellerId) {
+      return res.status(400).json({ error: 'Missing sellerId parameter' });
+    }
+  
+    try {
+      const count = await prisma.product.count({
+        where: {
+          sellerId: Number(sellerId),
+        },
+      });
+      res.status(200).json({ productCount: count });
+    } catch (error) {
+      console.error('Error fetching product count:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  };
+  
+  export const getSellersOrderCount = async (req: Request, res: Response) => {
+    try {
+      // First, fetch all sellers and their products
+      const sellersWithProducts = await prisma.sellers.findMany({
+        select: {
+          seller_id: true,
+          store_name: true,
+          products: {
+            select: {
+              product_id: true,
+            },
+          },
+        },
+      });
+  
+      // Count orders for each seller based on their product IDs
+      const sellersOrderCount = await Promise.all(
+        sellersWithProducts.map(async (seller) => {
+          const productIds = seller.products.map((product) => product.product_id);
+  
+          const orderCount = await prisma.orderProduct.count({
+            where: {
+              productId: { in: productIds },
+            },
+          });
+  
+          return {
+            seller_id: seller.seller_id,
+            store_name: seller.store_name,
+            order_count: orderCount,
+          };
+        })
+      );
+  
+      // Sort the sellers by order count in descending order
+      sellersOrderCount.sort((a, b) => b.order_count - a.order_count);
+  
+      res.status(200).json(sellersOrderCount);
+    } catch (error) {
+      console.error('Error fetching sellers order count:', error);
+      res.status(500).json({ error: 'Internal Server Error' });
     }
   };

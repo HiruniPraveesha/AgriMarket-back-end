@@ -16,19 +16,19 @@ import { authenticateToken } from './middlewares/secrets';
 import { becomeSeller } from './controllers/becomeSeller';
 import { completeSellerRegistration } from './controllers/completeSellerRegistration';
 // import { uploadMiddleware1, verifyBank } from './controllers/verifyBank';
-import { getSellerDetails, getSellerProducts } from './controllers/sellerProfile';
+import { getSellerDetails, getSellerProducts,ChangeContactNumber, ChangePassword } from './controllers/sellerProfile';
 import { getAllCategories1 } from './controllers/categoryController';
 
 import { getAllNotifications } from './controllers/Notification';
 import { getProductsAndSellerCities } from './controllers/seller-city';
-
+import { getProductSales, getOrdersByDate, getCustomerCount, getOrderCountBySellerId, getOrders, getOrderDataByProduct, getOrdersByMonth } from './controllers/manageOrder';
 import { verifyBank, uploadMiddleware2 } from './controllers/verifyBank';
 import { forgotPassword, verifyOTP, resetPassword, resendOTP } from './controllers/forgotPassword';
 import { getSellerNameById } from './controllers/seller';
 import { getCalendarEvents,getSellers,getCategories } from './controllers/calBuyer';
 import { getCities } from './controllers/completeSellerRegistration';
 import {createCalendarEvent,updateCalendarEvent , deleteCalendarEvent,getCalendarEventsBySeller,getEventById}from './controllers/calSeller'
-
+import { getAllBuyers, getAllSellers, deleteBuyer, getBuyersCount, getSellersCount } from './controllers/manageUsers';
 import {
    getAllCategories,
   createCategory,
@@ -46,7 +46,10 @@ import {
   deleteProduct, 
   updateProduct,
   addProduct, 
-  uploadMiddleware
+  uploadMiddleware,
+  getProductsCount,
+  getProductCountBySellerId,
+  getSellersOrderCount
 } from './controllers/product';
 
 
@@ -235,6 +238,27 @@ app.get('/get-wallet-balance', GetWalletBalance);
 app.get('/reward-history', getRewardHistory),
 app.get('/used-reward-points', usedRewardPointsHistory)
 
+
+
+//Nehan
+app.get('/orders/sales/:sellerId', getProductSales);
+app.get('/admin/getOrdersByDate', getOrdersByDate);
+app.get('/orders/customers/count', getCustomerCount);
+app.get('/orders/count/:sellerId', getOrderCountBySellerId);
+app.get('/orders/seller/:sellerId', getOrders); 
+app.get('/admin/getOrdersDataByProduct', getOrderDataByProduct)
+app.get('/get-orders-by-month', getOrdersByMonth)
+app.get('/get-seller-details', getSellerDetails);
+app.put('/change-contact-number', ChangeContactNumber);
+app.put('/change-password',ChangePassword);
+app.delete('/admin/deleteBuyer/:id', deleteBuyer)
+app.get('/admin/getAllBuyers', getAllBuyers);
+app.get('/admin/getAllSellers', getAllSellers);
+app.get('/admin/getSellersCount', getSellersCount);
+app.get('/admin/getBuyersCount' , getBuyersCount);
+app.get('/admin/getProductsCount', getProductsCount);
+app.get('/seller/productCount/:sellerId', getProductCountBySellerId);
+app.get('/admin/getSellersOrderCount', getSellersOrderCount);
 
 // Route for creating notification
 app.post('/create-notification', uploadMiddleware3, createNotification);
