@@ -95,8 +95,9 @@ export async function GetSellerAddress(req: Request, res: Response) {
         seller_id: Number(sellerId),
       },
       select: {
-        line2: true,
         line1: true,
+        line2: true,
+        // city: true,
         district: true,
       },
     });

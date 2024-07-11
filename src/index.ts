@@ -49,7 +49,9 @@ import {
   uploadMiddleware
 } from './controllers/product';
 
-
+import { GetDeliveryDetails, GetSellerAddress, placeOrder } from './controllers/checkout';
+import { getPastOrders } from './controllers/order-history';
+import { CreateWallet, GetBuyerDetails, getRewardHistory, GetWalletBalance, usedRewardPointsHistory } from './controllers/wallet';
 
 dotenv.config();
 
@@ -198,6 +200,19 @@ app.get('/CalendarBuyer', getCalendarEvents);
 app.get('/getCategories', getCategories);
 app.get('/getSellers', getSellers);
 // app.post('/addNotifications',createNotification)
+
+
+app.post('/placeOrder', placeOrder)
+app.get('/product/:productId', getProductById);
+app.get('/get-delivery-details', GetDeliveryDetails);
+app.get('/order-history', getPastOrders);
+app.get('/get-buyer-details', GetBuyerDetails);
+app.get('/seller-address', GetSellerAddress);
+app.post('/createWallet', CreateWallet);
+app.get('/get-wallet-balance', GetWalletBalance);
+app.get('/reward-history', getRewardHistory),
+app.get('/used-reward-points', usedRewardPointsHistory)
+
 
 //search
 app.get('/api/search', async (req, res) => {
